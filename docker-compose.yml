@@ -1,0 +1,36 @@
+services:
+  db:
+    image: postgres:16
+    environment:
+      POSTGRES_DB: escape
+      POSTGRES_USER: escape
+      POSTGRES_PASSWORD: escape
+    ports:
+      - "5432:5432"
+    volumes:
+      - db_data:/var/lib/postgresql/data
+
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    working_dir: /app
+    volumes:
+      - ./api:/app
+    depends_on:
+      - db
+    ports:
+      - "8000:8000"
+    command: bash -lc "php -S 0.0.0.0:8000 -t public"
+
+  front:
+    image: node:20
+    working_dir: /app
+    volumes:
+      - ./front:/app
+    ports:
+      - "5173:5173"
+    command: bash -lc "npm install && npm run dev -- --host 0.0.0.0"
+
+volumes:
+  db_data:
