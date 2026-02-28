@@ -1,64 +1,16 @@
-<h1> Intitalisation projet premiere fois : </h1>
-docker --version
-docker compose version
+# React + Vite
 
-si pas de composer : sudo apt update
-sudo apt install -y docker.io docker-compose-plugin
-sudo usermod -aG docker $USER
-newgrp docker
+This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
 
-creation du projet :
-mkdir escape-game && cd escape-game
-mkdir api front
+Currently, two official plugins are available:
 
-creation du docker-compose et du dockerfile:
-    working_dir: /app | volumes: - ./api:/app | sur le port 5173
-Nous avons configuré l'utilisation de l'image Docker de PostgreSQL, nous avons ajouté cette ligne dans le fichier .env pour définir la connexion à la base de données :
-DATABASE_URL="postgresql://escape:escape@db:5432/escape?serverVersion=16&charset=utf8"
+- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
+- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
 
+## React Compiler
 
+The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
 
-creer Symfony (dans le container)
-docker run --rm -it -v "$PWD/api:/app" -w /app composer:2 \
-create-project symfony/skeleton .
+## Expanding the ESLint configuration
 
-creer React :
-cd front
-npm create vite@latest . -- --template react
-npm install
-cd ..
-
-start docker:
-docker compose up -d
-
-relancer db :
-docker compose exec api php bin/console doctrine:database:create
-
-travailler dans le conteneur :
-docker compose exec api bash
-
-
-<h1>Commandes utiles au quotidien </h1>
-
-Lancer / arrêter :
-docker compose up -d
-docker compose down
-
-Voir ce qui tourne :
-docker compose ps
-docker compose logs -f api
-
-Exécuter Symfony (sans entrer dans le conteneur) :
-docker compose exec api php bin/console
-
-Entrer dans le conteneur :
-docker compose exec api bash 
-puis :
-php bin/console
-ou symfony console 
-
-start le server :
-symfony server:start --no-tls --listen-ip=0.0.0.0 --d
-
-
-
+If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.

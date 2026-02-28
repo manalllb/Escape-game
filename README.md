@@ -21,7 +21,11 @@ mkdir api front
 
 <p>creation du docker-compose et du dockerfile:</p>
 <p>
+<<<<<<< HEAD
 working_dir: /app | volumes: - ./api:/app | sur le port 5173
+=======
+working_dir: /app | volumes: - ./api:/app | sur le port 5173 pour le front 8000 pour le back
+>>>>>>> da452cc (base du projet correctement created)
 </p>
 
 <p>Nous avons configuré l'utilisation de l'image Docker de PostgreSQL, nous avons ajouté cette ligne dans le fichier .env pour définir la connexion à la base de données :</p>
@@ -90,3 +94,23 @@ ou symfony console
 symfony server:start --no-tls --listen-ip=0.0.0.0 --d
 </pre>
 
+<<<<<<< HEAD
+=======
+<h3>étape de la creation du projet : </h3> 
+<pre>
+symfony console make:entity AdminJeu et Joueur et SessionJeu <br>
+avec des relations de SessionJeu ManyToOne vers Adminjeu et Joueur ( joueur peut etre null pour permettre la creation de la session au debut)
+</pre>
+<pre>
+symfony console make:controller Api/SessionController <br>
+avec 3 fonctions : createSession, joinSession et state.
+</pre>
+<p> dans front</p>
+<p>dans front\src\ j'ai créer api.js : </p>
+<pre> deux fonctions : apiPost et apiGet</pre>
+<pre>
+docker run --rm -it -v "$PWD/api:/app" -w /app composer:2 require nelmio/cors-bundle <br>
+modifier le ficher nelmio_cors.yaml généré : allow_origin localhost :5173
+docker compose restart api
+</pre>
+>>>>>>> da452cc (base du projet correctement created)
