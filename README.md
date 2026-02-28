@@ -21,11 +21,7 @@ mkdir api front
 
 <p>creation du docker-compose et du dockerfile:</p>
 <p>
-<<<<<<< HEAD
-working_dir: /app | volumes: - ./api:/app | sur le port 5173
-=======
 working_dir: /app | volumes: - ./api:/app | sur le port 5173 pour le front 8000 pour le back
->>>>>>> da452cc (base du projet correctement created)
 </p>
 
 <p>Nous avons configuré l'utilisation de l'image Docker de PostgreSQL, nous avons ajouté cette ligne dans le fichier .env pour définir la connexion à la base de données :</p>
@@ -94,8 +90,6 @@ ou symfony console
 symfony server:start --no-tls --listen-ip=0.0.0.0 --d
 </pre>
 
-<<<<<<< HEAD
-=======
 <h3>étape de la creation du projet : </h3> 
 <pre>
 symfony console make:entity AdminJeu et Joueur et SessionJeu <br>
@@ -113,4 +107,8 @@ docker run --rm -it -v "$PWD/api:/app" -w /app composer:2 require nelmio/cors-bu
 modifier le ficher nelmio_cors.yaml généré : allow_origin localhost :5173
 docker compose restart api
 </pre>
->>>>>>> da452cc (base du projet correctement created)
+
+<h3> CREATION DES MINIS JEUX</h3>
+<pre>
+symfony console make:entity MiniJeu, ContQuiz, ContSeq, ContTri, SuiviProg
+</pre>
