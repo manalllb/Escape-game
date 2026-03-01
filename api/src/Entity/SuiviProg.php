@@ -6,6 +6,8 @@ use App\Repository\SuiviProgRepository;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: SuiviProgRepository::class)]
+#[ORM\Table(name: 'suivi_prog')]
+#[ORM\UniqueConstraint(name: 'uniq_session_minijeu', columns: ['session_id', 'mini_jeu_id'])]
 class SuiviProg
 {
     #[ORM\Id]
@@ -14,25 +16,25 @@ class SuiviProg
     private ?int $id = null;
 
     #[ORM\Column]
-    private ?bool $termine = null;
+    private ?bool $termine = false;
 
     #[ORM\Column]
-    private ?int $score = null;
+    private ?int $score = 0;
 
     #[ORM\Column]
-    private ?int $temps = null;
+    private ?int $temps = 0;
 
     #[ORM\Column]
-    private ?int $nbCosmetiqueAtt = null;
+    private ?int $nbCosmetiqueAtt = 0;
 
     #[ORM\Column]
-    private ?int $nbNonCosmetiqueAtt = null;
+    private ?int $nbNonCosmetiqueAtt = 0;
 
-    #[ORM\ManyToOne]
+    #[ORM\ManyToOne(inversedBy: 'suivis')]
     #[ORM\JoinColumn(nullable: false)]
     private ?SessionJeu $session = null;
 
-    #[ORM\ManyToOne]
+    #[ORM\ManyToOne(inversedBy: 'suivis')]
     #[ORM\JoinColumn(nullable: false)]
     private ?MiniJeu $miniJeu = null;
 
@@ -41,7 +43,7 @@ class SuiviProg
         return $this->id;
     }
 
-    public function isTermine(): ?bool
+    public function isTermine(): bool
     {
         return $this->termine;
     }
@@ -53,7 +55,7 @@ class SuiviProg
         return $this;
     }
 
-    public function getScore(): ?int
+    public function getScore(): int
     {
         return $this->score;
     }
@@ -65,7 +67,7 @@ class SuiviProg
         return $this;
     }
 
-    public function getTemps(): ?int
+    public function getTemps(): int
     {
         return $this->temps;
     }
@@ -77,7 +79,7 @@ class SuiviProg
         return $this;
     }
 
-    public function getNbCosmetiqueAtt(): ?int
+    public function getNbCosmetiqueAtt(): int
     {
         return $this->nbCosmetiqueAtt;
     }
@@ -89,7 +91,7 @@ class SuiviProg
         return $this;
     }
 
-    public function getNbNonCosmetiqueAtt(): ?int
+    public function getNbNonCosmetiqueAtt(): int
     {
         return $this->nbNonCosmetiqueAtt;
     }
@@ -124,4 +126,9 @@ class SuiviProg
 
         return $this;
     }
+public function isGagneTri(): bool
+{
+    return $this->nbCosmetiqueAtt > $this->nbNonCosmetiqueAtt;
+}
+    
 }

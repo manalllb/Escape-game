@@ -10,6 +10,15 @@ use Doctrine\ORM\Mapping as ORM;
 #[ORM\Entity(repositoryClass: MiniJeuRepository::class)]
 class MiniJeu
 {
+ #[ORM\OneToMany(mappedBy: 'miniJeu', targetEntity: SuiviProg::class, orphanRemoval: true)]
+private Collection $suivis;
+
+public function __construct()
+{
+    $this->suivis = new ArrayCollection();
+    $this->contQuizzes = new ArrayCollection();
+}
+
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
@@ -36,11 +45,7 @@ class MiniJeu
     #[ORM\OneToMany(targetEntity: ContQuiz::class, mappedBy: 'miniJeu')]
     private Collection $contQuizzes;
 
-    public function __construct()
-    {
-        $this->contQuizzes = new ArrayCollection();
-    }
-
+    
     public function getId(): ?int
     {
         return $this->id;
@@ -135,4 +140,10 @@ class MiniJeu
 
         return $this;
     }
+
+    public function getSuivis(): Collection
+{
+    return $this->suivis;
+}
+
 }

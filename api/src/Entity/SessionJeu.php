@@ -5,9 +5,25 @@ namespace App\Entity;
 use App\Repository\SessionJeuRepository;
 use Doctrine\ORM\Mapping as ORM;
 
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
+
 #[ORM\Entity(repositoryClass: SessionJeuRepository::class)]
 class SessionJeu
 {
+#[ORM\OneToMany(mappedBy: 'session', targetEntity: SuiviProg::class, orphanRemoval: true)]
+private Collection $suivis;
+
+public function __construct()
+{
+    $this->suivis = new ArrayCollection();
+}
+
+public function getSuivis(): Collection
+{
+    return $this->suivis;
+}
+
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
