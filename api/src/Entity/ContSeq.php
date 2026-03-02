@@ -22,9 +22,9 @@ class ContSeq
     #[ORM\Column(length: 50)]
     private ?string $zoneApp = null;
 
-    #[ORM\ManyToOne]
-    #[ORM\JoinColumn(nullable: false)]
-    private ?MiniJeu $miniJeu = null;
+#[ORM\ManyToOne(inversedBy: 'contSeqs')]
+#[ORM\JoinColumn(nullable: false)]
+private ?MiniJeu $miniJeu = null;
 
     public function getId(): ?int
     {

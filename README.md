@@ -90,6 +90,13 @@ ou symfony console
 symfony server:start --no-tls --listen-ip=0.0.0.0 --d
 </pre>
 
+<p>a chaque modif des entités :</p>
+<pre>
+symfony console make:migration
+symfony console doctrine:migrations:migrate
+</pre>
+
+
 <h3>étape de la creation du projet : </h3> 
 <pre>
 symfony console make:entity AdminJeu et Joueur et SessionJeu <br>

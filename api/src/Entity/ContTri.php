@@ -19,9 +19,9 @@ class ContTri
     #[ORM\Column]
     private ?bool $estCosmetique = null;
 
-    #[ORM\ManyToOne]
-    #[ORM\JoinColumn(nullable: false)]
-    private ?MiniJeu $miniJeu = null;
+#[ORM\ManyToOne(inversedBy: 'contTris')]
+#[ORM\JoinColumn(nullable: false)]
+private ?MiniJeu $miniJeu = null;
 
     public function getId(): ?int
     {

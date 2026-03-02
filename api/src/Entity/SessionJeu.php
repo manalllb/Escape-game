@@ -125,4 +125,25 @@ public function getSuivis(): Collection
 
         return $this;
     }
+
+    public function addSuivi(SuiviProg $suivi): static
+{
+    if (!$this->suivis->contains($suivi)) {
+        $this->suivis->add($suivi);
+        $suivi->setSession($this);
+    }
+
+    return $this;
+}
+
+public function removeSuivi(SuiviProg $suivi): static
+{
+    if ($this->suivis->removeElement($suivi)) {
+        if ($suivi->getSession() === $this) {
+            $suivi->setSession(null);
+        }
+    }
+
+    return $this;
+}
 }
