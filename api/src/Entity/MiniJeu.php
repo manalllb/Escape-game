@@ -28,7 +28,7 @@ class MiniJeu
     private ?int $dureeMax = null;
 
     #[ORM\Column]
-    private ?bool $actif = null;
+    private bool $actif = true;
 
      /**
      * @var Collection<int, SuiviProg>

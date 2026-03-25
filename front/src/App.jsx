@@ -1,11 +1,32 @@
 import { useState } from 'react';
 import { apiGet, apiPost } from "./api";
+import QuizGame from "./components/QuizGame";
+
+import GameFlow from "./components/GameFlow";
+
+export default function App() {
+  return (
+    <div style={{ maxWidth: 800, margin: "40px auto" }}>
+      <h1>Escape Game</h1>
+      <GameFlow sessionId={7} />
+    </div>
+  );
+}
+
+/**export default function App() {
+  return (
+    <div style={{ maxWidth: 800, margin: "40px auto", fontFamily: "system-ui" }}>
+      <h1>Escape Game</h1>
+      <QuizGame sessionId={7} miniJeuId={3} />
+    </div>
+  );
+} **/
 
 //import reactLogo from './assets/react.svg'
 //import viteLogo from '/vite.svg'
 //import './App.css'
 
-export default function App() {
+/**export default function App() {
   const [adminEmail, setAdminEmail] = useState("admin@escape.local");
   const [pin, setPin] = useState("");
   const [pseudo, setPseudo] = useState("Manal");
@@ -35,12 +56,19 @@ export default function App() {
   }
 
   return (
-    <div style={{ maxWidth: 720, margin: "40px auto", fontFamily: "system-ui" }}>
+    <div style={{ maxWidth: 800, margin: "40px auto", fontFamily: "system-ui" }}>
       <h1>Escape Game – MVP</h1>
 
       {error && <p style={{ color: "crimson" }}>{error}</p>}
 
-      <div style={{ padding: 12, border: "1px solid #ddd", borderRadius: 8, marginBottom: 12 }}>
+      <div
+        style={{
+          padding: 12,
+          border: "1px solid #ddd",
+          borderRadius: 8,
+          marginBottom: 12,
+        }}
+      >
         <h2>Admin</h2>
         <input
           value={adminEmail}
@@ -48,28 +76,96 @@ export default function App() {
           placeholder="admin email"
           style={{ width: "100%", padding: 8 }}
         />
-        <button onClick={() => createSession().catch(e => setError(e.message))} style={{ marginTop: 8 }}>
+        <button
+          onClick={() => createSession().catch((e) => setError(e.message))}
+          style={{ marginTop: 8 }}
+        >
           Créer une session
         </button>
-        {pin && <p><b>PIN:</b> {pin} | <b>Session:</b> {sessionId}</p>}
+
+        {pin && (
+          <p>
+            <b>PIN:</b> {pin} | <b>Session:</b> {sessionId}
+          </p>
+        )}
       </div>
 
-      <div style={{ padding: 12, border: "1px solid #ddd", borderRadius: 8, marginBottom: 12 }}>
+      <div
+        style={{
+          padding: 12,
+          border: "1px solid #ddd",
+          borderRadius: 8,
+          marginBottom: 12,
+        }}
+      >
         <h2>Joueur</h2>
-        <input value={pin} onChange={(e) => setPin(e.target.value)} placeholder="PIN" style={{ padding: 8 }} />
-        <input value={pseudo} onChange={(e) => setPseudo(e.target.value)} placeholder="Pseudo" style={{ padding: 8, marginLeft: 8 }} />
-        <button onClick={() => joinSession().catch(e => setError(e.message))} style={{ marginLeft: 8 }}>
+        <input
+          value={pin}
+          onChange={(e) => setPin(e.target.value)}
+          placeholder="PIN"
+          style={{ padding: 8 }}
+        />
+        <input
+          value={pseudo}
+          onChange={(e) => setPseudo(e.target.value)}
+          placeholder="Pseudo"
+          style={{ padding: 8, marginLeft: 8 }}
+        />
+        <button
+          onClick={() => joinSession().catch((e) => setError(e.message))}
+          style={{ marginLeft: 8 }}
+        >
           Rejoindre
         </button>
       </div>
 
+      <div
+        style={{
+          padding: 12,
+          border: "1px solid #ddd",
+          borderRadius: 8,
+          marginBottom: 12,
+        }}
+      >
+        <h2>Quiz</h2>
+
+        <label>
+          Mini-jeu ID :{" "}
+          <input
+            type="number"
+            value={miniJeuId}
+            onChange={(e) => setMiniJeuId(Number(e.target.value))}
+            style={{ padding: 8, width: 80 }}
+          />
+        </label>
+
+        {sessionId ? (
+          <div style={{ marginTop: 12 }}>
+            <QuizGame sessionId={sessionId} miniJeuId={miniJeuId} />
+          </div>
+        ) : (
+          <p>Crée ou rejoins une session pour lancer le quiz.</p>
+        )}
+      </div>
+
       <div style={{ padding: 12, border: "1px solid #ddd", borderRadius: 8 }}>
         <h2>State</h2>
-        <button onClick={() => loadState().catch(e => setError(e.message))} disabled={!sessionId}>
+        <button
+          onClick={() => loadState().catch((e) => setError(e.message))}
+          disabled={!sessionId}
+        >
           Charger /state
         </button>
+
         {state && (
-          <pre style={{ background: "#f6f6f6", padding: 12, borderRadius: 8, marginTop: 8 }}>
+          <pre
+            style={{
+              background: "#f6f6f6",
+              padding: 12,
+              borderRadius: 8,
+              marginTop: 8,
+            }}
+          >
             {JSON.stringify(state, null, 2)}
           </pre>
         )}
@@ -77,3 +173,4 @@ export default function App() {
     </div>
   );
 }
+  **/

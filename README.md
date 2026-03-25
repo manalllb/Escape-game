@@ -119,3 +119,8 @@ docker compose restart api
 <pre>
 symfony console make:entity MiniJeu, ContQuiz, ContSeq, ContTri, SuiviProg
 </pre>
+
+
+<h2> CONTINUATION: miniJeuController et aute </h2>
+<pre> si quiz si seq si tri </pre>
+<pre> front :)) </pre>
