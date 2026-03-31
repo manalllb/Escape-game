@@ -41,6 +41,16 @@ public function getSuivis(): Collection
     #[ORM\Column]
     private int $score = 0;
 
+    //ADDED !!
+    #[ORM\Column(length: 12, nullable: true)]
+    private ?string $codeSecret = null;
+
+    #[ORM\Column(nullable: true)]
+    private ?\DateTimeImmutable $dateDebut = null;
+
+    #[ORM\Column(nullable: true)]
+    private ?\DateTimeImmutable $dateFin = null;
+
     #[ORM\ManyToOne(inversedBy: 'sessionJeus')]
     #[ORM\JoinColumn(nullable: false)]
     private ?AdminJeu $admin = null;
@@ -125,6 +135,39 @@ public function getSuivis(): Collection
 
         return $this;
     }
+
+        public function getCodeSecret(): ?string
+{
+    return $this->codeSecret;
+}
+
+public function setCodeSecret(?string $codeSecret): static
+{
+    $this->codeSecret = $codeSecret;
+    return $this;
+}
+
+public function getDateDebut(): ?\DateTimeImmutable
+{
+    return $this->dateDebut;
+}
+
+public function setDateDebut(?\DateTimeImmutable $dateDebut): static
+{
+    $this->dateDebut = $dateDebut;
+    return $this;
+}
+
+public function getDateFin(): ?\DateTimeImmutable
+{
+    return $this->dateFin;
+}
+
+public function setDateFin(?\DateTimeImmutable $dateFin): static
+{
+    $this->dateFin = $dateFin;
+    return $this;
+}
 
     public function addSuivi(SuiviProg $suivi): static
 {

@@ -1,176 +1,189 @@
-import { useState } from 'react';
-import { apiGet, apiPost } from "./api";
-import QuizGame from "./components/QuizGame";
-
+import { useMemo, useState } from "react";
+import { apiPost } from "./api";
+import WelcomePage from "./components/WelcomePage";
+import AdminLogin from "./components/AdminLogin";
+import AdminDashboard from "./components/AdminDashboard";
+import JoinSession from "./components/JoinSession";
+import GameIntro from "./components/GameIntro";
 import GameFlow from "./components/GameFlow";
+import VictoryPage from "./components/VictoryPage";
+import DefeatPage from "./components/DefeatPage";
 
 export default function App() {
-  return (
-    <div style={{ maxWidth: 800, margin: "40px auto" }}>
-      <h1>Escape Game</h1>
-      <GameFlow sessionId={7} />
-    </div>
-  );
-}
-
-/**export default function App() {
-  return (
-    <div style={{ maxWidth: 800, margin: "40px auto", fontFamily: "system-ui" }}>
-      <h1>Escape Game</h1>
-      <QuizGame sessionId={7} miniJeuId={3} />
-    </div>
-  );
-} **/
-
-//import reactLogo from './assets/react.svg'
-//import viteLogo from '/vite.svg'
-//import './App.css'
-
-/**export default function App() {
-  const [adminEmail, setAdminEmail] = useState("admin@escape.local");
-  const [pin, setPin] = useState("");
-  const [pseudo, setPseudo] = useState("Manal");
+  const [page, setPage] = useState("welcome");
+  const [adminEmail, setAdminEmail] = useState("");
+  const [adminPassword, setAdminPassword] = useState("");
+  const [joinPin, setJoinPin] = useState("");
+  const [pseudo, setPseudo] = useState("");
   const [sessionId, setSessionId] = useState(null);
-  const [state, setState] = useState(null);
+  const [sessionPin, setSessionPin] = useState("");
+  const [sessionMeta, setSessionMeta] = useState(null);
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [gameResult, setGameResult] = useState(null);
 
-  async function createSession() {
+  const headerSubtitle = useMemo(() => {
+    if (page === "admin-login") return "Connexion administrateur";
+    if (page === "admin-dashboard")
+      return "Gestion de session et suivi des mini-jeux";
+    if (page === "join") return "Rejoindre une session avec un code PIN";
+    if (page === "intro") return "Briefing avant de commencer la mission";
+    if (page === "game") return "Progression de l escape game";
+    if (page === "victory") return "Mission accomplie";
+    if (page === "defeat") return "Mission échouée";
+    return "Escape game cosmétique";
+  }, [page]);
+
+  function resetError() {
     setError("");
-    const r = await apiPost("/api/sessions", { adminEmail });
-    setPin(r.codePin);
-    setSessionId(r.sessionId);
-    setState(null);
   }
 
-  async function joinSession() {
+  function goHome() {
+    setPage("welcome");
     setError("");
-    const r = await apiPost("/api/sessions/join", { codePin: pin, pseudo });
-    setSessionId(r.sessionId);
+    setLoading(false);
+    setGameResult(null);
   }
 
-  async function loadState() {
+  async function handleCreateSession() {
+    setLoading(true);
     setError("");
-    if (!sessionId) return;
-    const r = await apiGet(`/api/sessions/${sessionId}/state`);
-    setState(r);
+    try {
+      const response = await apiPost("/api/sessions", {
+        adminEmail,
+        password: adminPassword,
+      });
+      setSessionId(response.sessionId);
+      setSessionPin(response.codePin);
+      setSessionMeta(response);
+      setPage("admin-dashboard");
+    } catch (e) {
+      setError(e.message);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function handleJoinSession() {
+    setLoading(true);
+    setError("");
+    try {
+      const response = await apiPost("/api/sessions/join", {
+        codePin: joinPin,
+        pseudo,
+      });
+      setSessionId(response.sessionId);
+      setSessionPin(response.codePin);
+      setSessionMeta(response);
+      setPage("intro");
+    } catch (e) {
+      setError(e.message);
+    } finally {
+      setLoading(false);
+    }
   }
 
   return (
-    <div style={{ maxWidth: 800, margin: "40px auto", fontFamily: "system-ui" }}>
-      <h1>Escape Game – MVP</h1>
-
-      {error && <p style={{ color: "crimson" }}>{error}</p>}
-
-      <div
-        style={{
-          padding: 12,
-          border: "1px solid #ddd",
-          borderRadius: 8,
-          marginBottom: 12,
-        }}
-      >
-        <h2>Admin</h2>
-        <input
-          value={adminEmail}
-          onChange={(e) => setAdminEmail(e.target.value)}
-          placeholder="admin email"
-          style={{ width: "100%", padding: 8 }}
-        />
-        <button
-          onClick={() => createSession().catch((e) => setError(e.message))}
-          style={{ marginTop: 8 }}
-        >
-          Créer une session
-        </button>
-
-        {pin && (
-          <p>
-            <b>PIN:</b> {pin} | <b>Session:</b> {sessionId}
-          </p>
-        )}
-      </div>
-
-      <div
-        style={{
-          padding: 12,
-          border: "1px solid #ddd",
-          borderRadius: 8,
-          marginBottom: 12,
-        }}
-      >
-        <h2>Joueur</h2>
-        <input
-          value={pin}
-          onChange={(e) => setPin(e.target.value)}
-          placeholder="PIN"
-          style={{ padding: 8 }}
-        />
-        <input
-          value={pseudo}
-          onChange={(e) => setPseudo(e.target.value)}
-          placeholder="Pseudo"
-          style={{ padding: 8, marginLeft: 8 }}
-        />
-        <button
-          onClick={() => joinSession().catch((e) => setError(e.message))}
-          style={{ marginLeft: 8 }}
-        >
-          Rejoindre
-        </button>
-      </div>
-
-      <div
-        style={{
-          padding: 12,
-          border: "1px solid #ddd",
-          borderRadius: 8,
-          marginBottom: 12,
-        }}
-      >
-        <h2>Quiz</h2>
-
-        <label>
-          Mini-jeu ID :{" "}
-          <input
-            type="number"
-            value={miniJeuId}
-            onChange={(e) => setMiniJeuId(Number(e.target.value))}
-            style={{ padding: 8, width: 80 }}
-          />
-        </label>
-
-        {sessionId ? (
-          <div style={{ marginTop: 12 }}>
-            <QuizGame sessionId={sessionId} miniJeuId={miniJeuId} />
+    <div className="page-shell">
+      <header className="topbar">
+        <div className="brand">
+          <div className="brand-badge">🧪</div>
+          <div>
+            <h1 className="brand-title">Mission We Lab</h1>
+            <p className="brand-subtitle">{headerSubtitle}</p>
           </div>
-        ) : (
-          <p>Crée ou rejoins une session pour lancer le quiz.</p>
-        )}
-      </div>
+        </div>
 
-      <div style={{ padding: 12, border: "1px solid #ddd", borderRadius: 8 }}>
-        <h2>State</h2>
-        <button
-          onClick={() => loadState().catch((e) => setError(e.message))}
-          disabled={!sessionId}
-        >
-          Charger /state
-        </button>
+        <div className="actions-row">
+          {page !== "welcome" && (
+            <button className="ghost-btn" onClick={goHome}>
+              Retour accueil
+            </button>
+          )}
+        </div>
+      </header>
 
-        {state && (
-          <pre
-            style={{
-              background: "#f6f6f6",
-              padding: 12,
-              borderRadius: 8,
-              marginTop: 8,
-            }}
-          >
-            {JSON.stringify(state, null, 2)}
-          </pre>
-        )}
-      </div>
+      {page === "welcome" && (
+        <WelcomePage
+          onAdmin={() => {
+            resetError();
+            setPage("admin-login");
+          }}
+          onPlayer={() => {
+            resetError();
+            setPage("join");
+          }}
+        />
+      )}
+
+      {page === "admin-login" && (
+        <AdminLogin
+          adminEmail={adminEmail}
+          setAdminEmail={setAdminEmail}
+          adminPassword={adminPassword}
+          setAdminPassword={setAdminPassword}
+          onSubmit={handleCreateSession}
+          loading={loading}
+          error={error}
+        />
+      )}
+
+      {page === "admin-dashboard" && sessionId && (
+        <AdminDashboard
+          sessionId={sessionId}
+          sessionPin={sessionPin}
+          adminEmail={adminEmail}
+          initialData={sessionMeta}
+          onCreateAnother={() => {
+            setSessionId(null);
+            setSessionPin("");
+            setSessionMeta(null);
+            setPage("admin-login");
+          }}
+        />
+      )}
+
+      {page === "join" && (
+        <JoinSession
+          pin={joinPin}
+          setPin={setJoinPin}
+          pseudo={pseudo}
+          setPseudo={setPseudo}
+          onSubmit={handleJoinSession}
+          loading={loading}
+          error={error}
+        />
+      )}
+
+      {page === "intro" && sessionId && (
+        <GameIntro
+          sessionPin={sessionPin}
+          pseudo={pseudo}
+          onStart={() => setPage("game")}
+        />
+      )}
+
+      {page === "game" && sessionId && (
+        <GameFlow
+          sessionId={sessionId}
+          pseudo={pseudo}
+          onVictory={(result) => {
+            setGameResult(result);
+            setPage("victory");
+          }}
+          onDefeat={(result) => {
+            setGameResult(result);
+            setPage("defeat");
+          }}
+        />
+      )}
+
+      {page === "victory" && (
+        <VictoryPage result={gameResult} onRestart={goHome} />
+      )}
+      {page === "defeat" && (
+        <DefeatPage result={gameResult} onRestart={goHome} />
+      )}
     </div>
   );
 }
-  **/

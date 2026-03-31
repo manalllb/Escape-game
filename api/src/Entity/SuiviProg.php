@@ -30,6 +30,9 @@ class SuiviProg
     #[ORM\Column]
     private ?int $nbNonCosmetiqueAtt = 0;
 
+    #[ORM\Column]
+    private bool $aGagneCode = false;
+
     #[ORM\ManyToOne(inversedBy: 'suivis')]
     #[ORM\JoinColumn(nullable: false)]
     private ?SessionJeu $session = null;
@@ -126,9 +129,15 @@ class SuiviProg
 
         return $this;
     }
-public function isGagneTri(): bool
+public function isAGagneCode(): bool
 {
-    return $this->nbCosmetiqueAtt > $this->nbNonCosmetiqueAtt;
+    return $this->aGagneCode;
+}
+
+public function setAGagneCode(bool $aGagneCode): static
+{
+    $this->aGagneCode = $aGagneCode;
+    return $this;
 }
     
 }

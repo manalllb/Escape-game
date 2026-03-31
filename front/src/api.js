@@ -1,5 +1,13 @@
 export const API_BASE = "http://localhost:8000";
 
+async function parseJson(res) {
+  try {
+    return await res.json();
+  } catch {
+    return {};
+  }
+}
+
 export async function apiPost(path, body) {
   const res = await fetch(`${API_BASE}${path}`, {
     method: "POST",

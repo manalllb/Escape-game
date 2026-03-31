@@ -1,22 +1,22 @@
-import { useEffect, useMemo, useState } from "react";
-import { apiGet, apiPost } from "../api";
+import { useEffect, useMemo, useState } from 'react';
+import { apiGet, apiPost } from '../api';
 
 function shuffle(array) {
   return [...array].sort(() => Math.random() - 0.5);
 }
 
-export default function QuizGame({ sessionId, miniJeuId = 3 }) {
+export default function QuizGame({ sessionId, miniJeuId = 3, onComplete }) {
   const [quiz, setQuiz] = useState(null);
   const [index, setIndex] = useState(0);
   const [score, setScore] = useState(0);
   const [startedAt, setStartedAt] = useState(null);
-  const [finished, setFinished] = useState(false);
-  const [error, setError] = useState("");
+  const [error, setError] = useState('');
+  const [saving, setSaving] = useState(false);
 
   useEffect(() => {
     async function loadQuiz() {
       try {
-        setError("");
+        setError('');
         const data = await apiGet(`/api/minijeux/${miniJeuId}/contenu`);
         setQuiz(data);
         setStartedAt(Date.now());
@@ -24,6 +24,7 @@ export default function QuizGame({ sessionId, miniJeuId = 3 }) {
         setError(e.message);
       }
     }
+
     loadQuiz();
   }, [miniJeuId]);
 
@@ -38,7 +39,7 @@ export default function QuizGame({ sessionId, miniJeuId = 3 }) {
   }, [currentQuestion]);
 
   async function handleAnswer(choice) {
-    if (!currentQuestion) return;
+    if (!currentQuestion || saving) return;
 
     const isCorrect = choice === currentQuestion.bonneReponse;
     const newScore = isCorrect ? score + 1 : score;
@@ -46,53 +47,60 @@ export default function QuizGame({ sessionId, miniJeuId = 3 }) {
 
     const isLast = index === quiz.questions.length - 1;
 
-    if (isLast) {
-      const temps = Math.floor((Date.now() - startedAt) / 1000);
+    if (!isLast) {
+      setIndex((prev) => prev + 1);
+      return;
+    }
 
-      try {
-        await apiPost(`/api/sessions/${sessionId}/minijeux/${miniJeuId}/complete`, {
-          score: newScore,
-          temps,
-          nbCosmetiqueAtt: 0,
-          nbNonCosmetiqueAtt: 0,
-        });
-        window.location.reload();
-        setFinished(true);
-      } catch (e) {
-        setError(e.message);
-      }
-    } else {
-      setIndex(index + 1);
+    const temps = Math.floor((Date.now() - startedAt) / 1000);
+    try {
+      setSaving(true);
+      await apiPost(`/api/sessions/${sessionId}/minijeux/${miniJeuId}/complete`, {
+        score: newScore,
+        temps,
+        nbCosmetiqueAtt: 0,
+        nbNonCosmetiqueAtt: 0,
+      });
+      onComplete?.();
+    } catch (e) {
+      setError(e.message);
+      setSaving(false);
     }
   }
 
-  if (error) return <p style={{ color: "crimson" }}>{error}</p>;
-  if (!quiz) return <p>Chargement du quiz...</p>;
-  if (finished) {
-    return (
-      <div>
-        <h2>{quiz.nom}</h2>
-        <p>Quiz terminé ✅</p>
-        <p>Score : {score} / {quiz.questions.length}</p>
-      </div>
-    );
-  }
+  if (error) return <div className="error-box">{error}</div>;
+  if (!quiz) return <section className="glass-card" style={{ padding: 26 }}><p>Chargement du quiz...</p></section>;
 
   return (
-    <div style={{ padding: 16, border: "1px solid #ddd", borderRadius: 8 }}>
-      <h2>{quiz.nom}</h2>
-      <p>Question {index + 1} / {quiz.questions.length}</p>
-      <h3>{currentQuestion.question}</h3>
+    <section className="glass-card" style={{ padding: 26 }}>
+      <p style={{ marginTop: 0, opacity: 0.72 }}>Mini-jeu 3</p>
+      <h2 style={{ marginBottom: 8 }}>{quiz.nom}</h2>
+      <p style={{ opacity: 0.74 }}>
+        Réponds correctement aux questions pour valider le défi écologique.
+      </p>
 
-      <div style={{ display: "grid", gap: 8 }}>
-        {choices.map((choice, i) => (
-          <button key={i} onClick={() => handleAnswer(choice)}>
-            {choice}
-          </button>
-        ))}
+      <div className="mini-card" style={{ marginTop: 20 }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
+          <div className="status-chip active">Question {index + 1} / {quiz.questions.length}</div>
+          <div className="status-chip done">Score actuel : {score}</div>
+        </div>
+
+        <h3 style={{ marginTop: 18 }}>{currentQuestion.question}</h3>
+
+        <div className="layout-stack" style={{ marginTop: 16 }}>
+          {choices.map((choice, choiceIndex) => (
+            <button
+              key={choiceIndex}
+              className="ghost-btn"
+              style={{ width: '100%', textAlign: 'left', padding: '16px 18px' }}
+              onClick={() => handleAnswer(choice)}
+              disabled={saving}
+            >
+              {choice}
+            </button>
+          ))}
+        </div>
       </div>
-
-      <p style={{ marginTop: 12 }}>Score actuel : {score}</p>
-    </div>
+    </section>
   );
 }
