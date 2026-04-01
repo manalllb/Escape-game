@@ -16,6 +16,9 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Attribute\Route;
 use App\Repository\SuiviProgRepository;
+use App\Entity\CodeJeu;
+use App\Entity\InventaireCode;
+use App\Repository\InventaireCodeRepository;
 
 #[Route('/api', name: 'api_')] //ecrit ici travail en moins :)
 class SessionController extends AbstractController
@@ -23,7 +26,7 @@ class SessionController extends AbstractController
     #[Route('/sessions', name: 'sessions_create', methods: ['POST'])]
 
     public function createSession(Request $request, EntityManagerInterface $em, 
-    AdminJeuRepository $adminRepo, SessionJeuRepository $sessionRepo, MiniJeuRepository $miniJeuRepo ): JsonResponse 
+    AdminJeuRepository $adminRepo, SessionJeuRepository $sessionRepo, MiniJeuRepository $miniJeuRepo): JsonResponse 
     {
         // on recupère l'admin par email envoyé (plus tard: vraie auth /session) DONE now !!! 
         $data = json_decode($request->getContent(), true) ?? [];
@@ -64,6 +67,34 @@ class SessionController extends AbstractController
         // joueur reste null jusqu'au join
 
         $em->persist($session);
+
+
+        $codeSecret = $session->getCodeSecret();
+
+$frag1 = substr($codeSecret, 0, 4);
+$frag2 = substr($codeSecret, 4, 4);
+$frag3 = substr($codeSecret, 8, 4);
+
+$fragments = [
+    ['fragment' => $frag1, 'ordre' => 1],
+    ['fragment' => $frag2, 'ordre' => 2],
+    ['fragment' => $frag3, 'ordre' => 3],
+];
+
+foreach ($fragments as $dataCode) {
+    $code = (new CodeJeu())
+        ->setFragment($dataCode['fragment'])
+        ->setOrdre($dataCode['ordre']);
+
+    $em->persist($code);
+
+    $inventaire = (new InventaireCode())
+        ->setSession($session)
+        ->setCode($code)
+        ->setEstValide(false);
+
+    $em->persist($inventaire);
+}
         
 $miniJeux = $miniJeuRepo->findBy(['actif' => true], ['ordre' => 'ASC']);
 
@@ -186,6 +217,15 @@ public function state(
             'nbNonCosmetiqueAtt' => $s->getNbNonCosmetiqueAtt(),
             'aGagneCode' => $s->isAGagneCode(),
         ], $session->getSuivis()->toArray()),
+        'inventaireCodes' => array_map(fn($inv) => [
+            'id' => $inv->getId(),
+            'estValide' => $inv->isEstValide(),
+            'code' => [
+                'id' => $inv->getCode()?->getId(),
+                'fragment' => $inv->getCode()?->getFragment(),
+                'ordre' => $inv->getCode()?->getOrdre(),
+                ],
+            ], $session->getInventaireCodes()->toArray()),
     ]);
 }
 
@@ -198,7 +238,8 @@ public function completeMiniJeu(
     EntityManagerInterface $em,
     SessionJeuRepository $sessionRepo,
     MiniJeuRepository $miniJeuRepo,
-    SuiviProgRepository $suiviRepo
+    SuiviProgRepository $suiviRepo,
+    InventaireCodeRepository $inventaireRepo
 ): JsonResponse {
     $session = $sessionRepo->find($sessionId);
     if (!$session) {
@@ -250,10 +291,32 @@ public function completeMiniJeu(
     }
 
 
+    if ($totalContenu <= 0) {
+    return $this->json([
+        'error' => 'Aucune donnée disponible pour ce mini-jeu'
+    ], 400);
+}
 
 
     $seuil = (int) ceil($totalContenu / 2);
     $aGagneCode = $score >= $seuil;
+
+    if ($aGagneCode) {
+    $inventaires = $inventaireRepo->findBy(
+        ['session' => $session],
+        ['id' => 'ASC']
+    );
+
+    foreach ($inventaires as $inventaire) {
+        if (
+            $inventaire->getCode() &&
+            $inventaire->getCode()->getOrdre() === $miniJeu->getOrdre()
+        ) {
+            $inventaire->setEstValide(true);
+            break;
+        }
+    }
+}
 
     $suivi
         ->setTermine($aGagneCode)
@@ -307,4 +370,63 @@ private function generateSecretCode(): string
         . random_int(1000, 9999)
         . $this->randomLetters(4);
 }
+
+
+#[Route('/sessions/{id}/validate-code', name: 'sessions_validate_code', methods: ['POST'])]
+public function validateCode(
+    int $id,
+    Request $request,
+    SessionJeuRepository $sessionRepo,
+    EntityManagerInterface $em
+): JsonResponse {
+    $session = $sessionRepo->find($id);
+
+    if (!$session) {
+        return $this->json(['error' => 'Session not found'], 404);
+    }
+
+    if ($session->getDateFin() && new \DateTimeImmutable() > $session->getDateFin()) {
+        $session->setEstActive(false);
+        $em->flush();
+
+        return $this->json(['error' => 'Temps écoulé, session terminée'], 403);
+    }
+
+    $data = json_decode($request->getContent(), true) ?? [];
+    $codeSaisi = strtoupper(trim($data['code'] ?? ''));
+
+    if ($codeSaisi === '') {
+        return $this->json(['error' => 'Le code est obligatoire'], 400);
+    }
+
+    $inventaires = $session->getInventaireCodes()->toArray();
+    $tousCodesDebloques = count($inventaires) > 0;
+
+    foreach ($inventaires as $inventaire) {
+        if (!$inventaire->isEstValide()) {
+            $tousCodesDebloques = false;
+            break;
+        }
+    }
+
+    if (!$tousCodesDebloques) {
+        return $this->json([
+            'success' => false,
+            'error' => 'Tous les fragments n’ont pas encore été débloqués'
+        ], 400);
+    }
+
+    $codeSecret = strtoupper((string) $session->getCodeSecret());
+    $success = $codeSaisi === $codeSecret;
+
+    return $this->json([
+        'success' => $success,
+        'message' => $success
+            ? 'Code correct, coffre déverrouillé'
+            : 'Code incorrect',
+        'scoreFinal' => $session->getScore(),
+    ]);
+}
+
+
 }

@@ -17,6 +17,7 @@ private Collection $suivis;
 public function __construct()
 {
     $this->suivis = new ArrayCollection();
+    $this->inventaireCodes = new ArrayCollection();
 }
 
 public function getSuivis(): Collection
@@ -35,6 +36,7 @@ public function getSuivis(): Collection
     #[ORM\Column]
     private ?bool $estActive = null;
 
+    // moment de creation de la session par l'admin
     #[ORM\Column]
     private ?\DateTimeImmutable $dateCreation = null;
 
@@ -45,9 +47,13 @@ public function getSuivis(): Collection
     #[ORM\Column(length: 12, nullable: true)]
     private ?string $codeSecret = null;
 
+
+// date debut partie par joueur !!!!
     #[ORM\Column(nullable: true)]
     private ?\DateTimeImmutable $dateDebut = null;
 
+
+// date fin partie par joueur !!!!
     #[ORM\Column(nullable: true)]
     private ?\DateTimeImmutable $dateFin = null;
 
@@ -58,6 +64,12 @@ public function getSuivis(): Collection
     #[ORM\ManyToOne(inversedBy: 'sessionJeus')]
     #[ORM\JoinColumn(nullable: true)]
     private ?Joueur $joueur = null;
+
+    /**
+     * @var Collection<int, InventaireCode>
+     */
+    #[ORM\OneToMany(targetEntity: InventaireCode::class, mappedBy: 'session', orphanRemoval: true)]
+    private Collection $inventaireCodes;
 
     public function getId(): ?int
     {
@@ -184,6 +196,36 @@ public function removeSuivi(SuiviProg $suivi): static
     if ($this->suivis->removeElement($suivi)) {
         if ($suivi->getSession() === $this) {
             $suivi->setSession(null);
+        }
+    }
+
+    return $this;
+}
+
+/**
+ * @return Collection<int, InventaireCode>
+ */
+public function getInventaireCodes(): Collection
+{
+    return $this->inventaireCodes;
+}
+
+public function addInventaireCode(InventaireCode $inventaireCode): static
+{
+    if (!$this->inventaireCodes->contains($inventaireCode)) {
+        $this->inventaireCodes->add($inventaireCode);
+        $inventaireCode->setSession($this);
+    }
+
+    return $this;
+}
+
+public function removeInventaireCode(InventaireCode $inventaireCode): static
+{
+    if ($this->inventaireCodes->removeElement($inventaireCode)) {
+        // set the owning side to null (unless already changed)
+        if ($inventaireCode->getSession() === $this) {
+            $inventaireCode->setSession(null);
         }
     }
 
