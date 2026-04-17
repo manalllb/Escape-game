@@ -1,39 +1,61 @@
-export default function JoinSession({ pin, setPin, pseudo, setPseudo, onSubmit, loading, error }) {
+import { useState } from "react";
+import { apiPost } from "../api";
+
+export default function JoinSession({ onSuccess }) {
+  const [pin, setPin] = useState("");
+  const [pseudo, setPseudo] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+
+  async function handleSubmit(e) {
+    e.preventDefault();
+    setLoading(true);
+    setError("");
+
+    try {
+      const data = await apiPost("/api/sessions/join", {
+        codePin: pin,
+        pseudo,
+      });
+
+      onSuccess({
+        sessionId: data.sessionId,
+        codePin: data.codePin,
+        pseudo: data.pseudo,
+      });
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  }
+
   return (
-    <section className="glass-card center-card">
-      <p style={{ marginTop: 0, opacity: 0.72 }}>Accès joueur</p>
-      <h2 style={{ fontSize: '2rem', marginBottom: 8 }}>Rejoindre une session</h2>
-      <p style={{ marginTop: 0, opacity: 0.72 }}>
-        Entre le code PIN communiqué par l’administrateur puis ton pseudo.
-      </p>
+    <section className="panel small-panel">
+      <p className="eyebrow">Rejoindre une partie</p>
+      <h2>Entrer dans la mission</h2>
 
-      {error && <div className="error-box">{error}</div>}
-
-      <div className="layout-stack">
+      <form className="stack" onSubmit={handleSubmit}>
         <input
-          className="code-input"
+          className="input"
+          placeholder="Code PIN"
           value={pin}
-          onChange={(e) => setPin(e.target.value.replace(/\D/g, '').slice(0, 6))}
-          placeholder="Code PIN (6 chiffres)"
-          inputMode="numeric"
-          maxLength={6}
+          onChange={(e) => setPin(e.target.value)}
         />
 
         <input
           className="input"
+          placeholder="Pseudo"
           value={pseudo}
           onChange={(e) => setPseudo(e.target.value)}
-          placeholder="Ton pseudo"
         />
 
-        <button
-          className="primary-btn"
-          onClick={onSubmit}
-          disabled={!pin || !pseudo || loading}
-        >
-          {loading ? 'Connexion...' : 'Rejoindre la session'}
+        {error && <p className="error-text">{error}</p>}
+
+        <button className="primary-button" disabled={loading || !pin || !pseudo}>
+          {loading ? "Connexion..." : "Rejoindre"}
         </button>
-      </div>
+      </form>
     </section>
   );
 }

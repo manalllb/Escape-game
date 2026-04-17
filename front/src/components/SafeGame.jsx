@@ -1,52 +1,89 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useState } from "react";
+import { apiGet, apiPost } from "../api";
 
-export default function SafeGame({ fragments, score, onVictory, onDefeat }) {
-  const [value, setValue] = useState('');
-  const [message, setMessage] = useState('');
-  const finalCode = useMemo(() => fragments.join(''), [fragments]);
+export default function SafeGame({ sessionId }) {
+  const [session, setSession] = useState(null);
+  const [code, setCode] = useState("");
+  const [message, setMessage] = useState("");
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState(false);
 
-  function validate() {
-    if (value.toUpperCase() === finalCode) {
-      setMessage('Code correct ! Le coffre est déverrouillé.');
-      onVictory?.();
-      return;
+  useEffect(() => {
+    async function loadState() {
+      try {
+        const data = await apiGet(`/api/sessions/${sessionId}/state`);
+        setSession(data);
+      } catch (err) {
+        setError(err.message);
+      }
     }
 
-    setMessage('Code incorrect. La mission échoue pour le moment.');
-    onDefeat?.();
+    loadState();
+  }, [sessionId]);
+
+  async function validateCode(e) {
+    e.preventDefault();
+    setError("");
+    setMessage("");
+
+    try {
+      const data = await apiPost(`/api/sessions/${sessionId}/validate-code`, {
+        code,
+      });
+
+      setSuccess(Boolean(data.success));
+      setMessage(data.message || "Résultat reçu.");
+    } catch (err) {
+      setError(err.message);
+      setSuccess(false);
+    }
   }
 
+  if (error && !session)
+    return (
+      <section className="panel">
+        <p className="error-text">{error}</p>
+      </section>
+    );
+  if (!session)
+    return (
+      <section className="panel">
+        <p>Chargement du coffre...</p>
+      </section>
+    );
+
   return (
-    <section className="glass-card" style={{ padding: 28, textAlign: 'center' }}>
-      <p style={{ marginTop: 0, opacity: 0.72 }}>Phase finale</p>
-      <h2 style={{ fontSize: '2.2rem', marginBottom: 8 }}>Coffre-fort du laboratoire</h2>
-      <p style={{ maxWidth: 660, margin: '0 auto', opacity: 0.74, lineHeight: 1.7 }}>
-        Tu as terminé les 3 mini-jeux. Assemble maintenant les fragments pour saisir le code final.
+    <section className="panel center-panel">
+      <p className="eyebrow">Coffre final</p>
+      <h2>Entre le code secret</h2>
+      <p className="muted">
+        Assemble les 3 fragments pour déverrouiller le coffre.
       </p>
 
-      <div className="fragment-row" style={{ marginTop: 20 }}>
-        {fragments.map((fragment, index) => (
-          <div key={index} className="fragment-card">
-            <div>Fragment {index + 1}</div>
-            <div className="fragment-code">{fragment}</div>
+      <div className="fragment-row">
+        {session.inventaireCodes?.map((item) => (
+          <div className="fragment-box" key={item.id}>
+            {item.estValide ? item.code.fragment : "????"}
           </div>
         ))}
       </div>
 
-      <div className="mini-card" style={{ marginTop: 24, maxWidth: 520, marginInline: 'auto' }}>
-        <p style={{ marginTop: 0, opacity: 0.72 }}>Score final provisoire : {score}</p>
+      <form className="stack" onSubmit={validateCode}>
         <input
-          className="code-input"
-          value={value}
-          onChange={(e) => setValue(e.target.value.toUpperCase())}
-          placeholder="Entre le code final"
+          className="input code-input"
+          value={code}
+          onChange={(e) => setCode(e.target.value.toUpperCase())}
+          placeholder="Exemple : ABCD1234WXYZ"
+          maxLength={12}
         />
-        <div className="actions-row" style={{ justifyContent: 'center', marginTop: 16 }}>
-          <button className="danger-btn" onClick={() => setValue('')}>Effacer</button>
-          <button className="primary-btn" onClick={validate} disabled={!value}>Valider le code</button>
-        </div>
-        {message && <div className={message.includes('correct') ? 'success-box' : 'error-box'} style={{ marginTop: 16 }}>{message}</div>}
-      </div>
+
+        <button className="primary-button">Valider le code</button>
+      </form>
+
+      {message && (
+        <p className={success ? "success-text" : "error-text"}>{message}</p>
+      )}
+      {error && <p className="error-text">{error}</p>}
     </section>
   );
 }

@@ -1,161 +1,99 @@
-import { useEffect, useState } from 'react';
-import { apiGet } from '../api';
+import { useEffect, useState } from "react";
+import { apiGet } from "../api";
 
-function statusLabel(session) {
-  if (!session) return 'Chargement';
-  const doneCount = session.suivis?.filter((s) => s.termine).length ?? 0;
-  if (doneCount === 0) return 'En attente';
-  if (doneCount === (session.suivis?.length ?? 0)) return 'Terminée';
-  return 'En cours';
+function formatTime(totalSeconds) {
+  const seconds = Math.max(0, totalSeconds || 0);
+  const minutes = Math.floor(seconds / 60);
+  const remaining = seconds % 60;
+  return `${String(minutes).padStart(2, "0")}:${String(remaining).padStart(2, "0")}`;
 }
 
-function statusClass(session) {
-  const label = statusLabel(session);
-  if (label === 'Terminée') return 'done';
-  if (label === 'En cours') return 'active';
-  return 'pending';
-}
-
-export default function AdminDashboard({ sessionId, sessionPin, adminEmail, onCreateAnother }) {
+export default function AdminDashboard({ sessionId, sessionPin, adminEmail }) {
   const [session, setSession] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
 
-  async function loadSession() {
+  async function loadState() {
     try {
-      setError('');
-      setLoading(true);
       const data = await apiGet(`/api/sessions/${sessionId}/state`);
       setSession(data);
-    } catch (e) {
-      setError(e.message);
-    } finally {
-      setLoading(false);
+      setError("");
+    } catch (err) {
+      setError(err.message);
     }
   }
 
   useEffect(() => {
-    loadSession();
-    const interval = setInterval(loadSession, 4000);
+    loadState();
+    const interval = setInterval(loadState, 3000);
     return () => clearInterval(interval);
   }, [sessionId]);
 
-  const suivis = session?.suivis ?? [];
-  const doneCount = suivis.filter((s) => s.termine).length;
-  const progress = suivis.length ? (doneCount / suivis.length) * 100 : 0;
-
   return (
-    <div className="layout-stack" style={{ width: 'min(1100px, 100%)', margin: '0 auto' }}>
-      <section className="glass-card" style={{ padding: 26 }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', gap: 16, flexWrap: 'wrap' }}>
-          <div>
-            <p style={{ marginTop: 0, opacity: 0.72 }}>Panneau d’administration</p>
-            <h2 style={{ marginBottom: 8 }}>Session active créée</h2>
-            <p style={{ margin: 0, opacity: 0.72 }}>Admin connecté : {adminEmail}</p>
-          </div>
-
-          <div className="actions-row">
-            <button className="secondary-btn" onClick={loadSession}>
-              Actualiser
-            </button>
-            <button className="primary-btn" onClick={onCreateAnother}>
-              Créer une autre session
-            </button>
-          </div>
+    <section className="panel">
+      <div className="section-title-row">
+        <div>
+          <p className="eyebrow">Tableau de bord admin</p>
+          <h2>Session {sessionId}</h2>
+          <p className="muted">Connecté comme {adminEmail}</p>
         </div>
-      </section>
-
-      {error && <div className="error-box">{error}</div>}
-
-      <div className="stat-grid">
-        <div className="stat-card glass-card">
-          <small>Code PIN à partager</small>
-          <strong>{sessionPin}</strong>
-        </div>
-        <div className="stat-card glass-card">
-          <small>Numéro de session</small>
-          <strong>{sessionId}</strong>
-        </div>
-        <div className="stat-card glass-card">
-          <small>État</small>
-          <div className={`status-chip ${statusClass(session)}`}>{statusLabel(session)}</div>
-        </div>
-        <div className="stat-card glass-card">
-          <small>Joueur connecté</small>
-          <strong style={{ fontSize: '1.05rem' }}>{session?.joueur?.pseudo || 'Aucun joueur'}</strong>
-        </div>
+        <button className="secondary-button" onClick={loadState}>Actualiser</button>
       </div>
 
-      <section className="glass-card" style={{ padding: 26 }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
-          <div>
-            <h3 style={{ marginTop: 0 }}>Progression de la mission</h3>
-            <p style={{ margin: 0, opacity: 0.72 }}>
-              Les joueurs peuvent utiliser le code PIN <strong>{sessionPin}</strong> pour rejoindre la partie.
-            </p>
+      {error && <p className="error-text">{error}</p>}
+      {!session && !error && <p>Chargement...</p>}
+
+      {session && (
+        <>
+          <div className="stats-grid">
+            <div className="stat-card">
+              <span>Code PIN</span>
+              <strong>{sessionPin || session.codePin}</strong>
+            </div>
+            <div className="stat-card">
+              <span>Temps restant</span>
+              <strong>{session.sessionExpiree ? "Terminé" : formatTime(session.tempsRestant)}</strong>
+            </div>
+            <div className="stat-card">
+              <span>Score</span>
+              <strong>{session.score}</strong>
+            </div>
+            <div className="stat-card">
+              <span>Joueur</span>
+              <strong>{session.joueur?.pseudo || "En attente"}</strong>
+            </div>
           </div>
-          <div className="status-chip active">Score session : {session?.score ?? 0}</div>
-        </div>
 
-        <div style={{ marginTop: 18 }}>
-          <div className="progress">
-            <span style={{ width: `${progress}%` }} />
-          </div>
-          <p style={{ marginBottom: 0, opacity: 0.74 }}>{doneCount} / {suivis.length} mini-jeux terminés</p>
-        </div>
-      </section>
-
-      <section className="glass-card" style={{ padding: 26 }}>
-        <h3 style={{ marginTop: 0 }}>État des parties</h3>
-        {loading && <p>Chargement de l’état de la session...</p>}
-
-        {!loading && suivis.length === 0 && <p>Aucun mini-jeu trouvé pour cette session.</p>}
-
-        {!loading && suivis.length > 0 && (
-          <div className="layout-stack">
-            {suivis
-              .slice()
-              .sort((a, b) => a.ordre - b.ordre)
-              .map((suivi) => (
-                <div key={suivi.id} className="mini-card">
-                  <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
-                    <div>
-                      <p style={{ margin: '0 0 6px', opacity: 0.62, textTransform: 'uppercase', fontSize: 12 }}>
-                        Jeu {suivi.ordre}
-                      </p>
-                      <h4 style={{ margin: 0 }}>{suivi.nom}</h4>
-                      <p style={{ margin: '6px 0 0', opacity: 0.72 }}>
-                        Type : {suivi.type} · Durée max : {suivi.dureeMax ?? '—'}
-                      </p>
-                    </div>
-                    <div className={`status-chip ${suivi.termine ? 'done' : 'pending'}`}>
-                      {suivi.termine ? 'Terminé' : 'Non commencé'}
-                    </div>
+          <div className="subpanel">
+            <h3>État des mini-jeux</h3>
+            <div className="card-list">
+              {session.suivis.map((suivi) => (
+                <div className="mini-card" key={suivi.id}>
+                  <div className="mini-card-head">
+                    <strong>{suivi.nom}</strong>
+                    <span className={suivi.termine ? "badge success" : "badge pending"}>
+                      {suivi.termine ? "Validé" : "À faire"}
+                    </span>
                   </div>
-
-                  <div className="stat-grid" style={{ marginTop: 14 }}>
-                    <div className="stat-card">
-                      <small>Score</small>
-                      <strong>{suivi.score}</strong>
-                    </div>
-                    <div className="stat-card">
-                      <small>Temps</small>
-                      <strong>{suivi.temps}s</strong>
-                    </div>
-                    <div className="stat-card">
-                      <small>Cosmétiques triés</small>
-                      <strong>{suivi.nbCosmetiqueAtt ?? 0}</strong>
-                    </div>
-                    <div className="stat-card">
-                      <small>Non-cosmétiques triés</small>
-                      <strong>{suivi.nbNonCosmetiqueAtt ?? 0}</strong>
-                    </div>
-                  </div>
+                  <p className="muted">Type : {suivi.type} · Ordre : {suivi.ordre}</p>
+                  <p className="muted">Score : {suivi.score} · Temps : {suivi.temps}s</p>
+                  <p className="muted">Fragment gagné : {suivi.aGagneCode ? "Oui" : "Non"}</p>
                 </div>
               ))}
+            </div>
           </div>
-        )}
-      </section>
-    </div>
+
+          <div className="subpanel">
+            <h3>Fragments</h3>
+            <div className="fragment-row">
+              {session.inventaireCodes?.map((item) => (
+                <div className="fragment-box" key={item.id}>
+                  {item.estValide ? item.code.fragment : "????"}
+                </div>
+              ))}
+            </div>
+          </div>
+        </>
+      )}
+    </section>
   );
 }

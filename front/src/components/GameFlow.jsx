@@ -1,23 +1,28 @@
-import { useEffect, useMemo, useState } from 'react';
-import { apiGet } from '../api';
-import QuizGame from './QuizGame';
-import SequenceGame from './SequenceGame';
-import TriGame from './TriGame';
-import SafeGame from './SafeGame';
+import { useEffect, useMemo, useState } from "react";
+import { apiGet } from "../api";
+import TriGame from "./TriGame";
+import SequenceGame from "./SequenceGame";
+import QuizGame from "./QuizGame";
+import SafeGame from "./SafeGame";
 
-const FRAGMENTS = ['FORM', '1223', 'RECY'];
+function formatTime(totalSeconds) {
+  const seconds = Math.max(0, totalSeconds || 0);
+  const minutes = Math.floor(seconds / 60);
+  const remaining = seconds % 60;
+  return `${String(minutes).padStart(2, "0")}:${String(remaining).padStart(2, "0")}`;
+}
 
-export default function GameFlow({ sessionId, pseudo, onVictory, onDefeat }) {
+export default function GameFlow({ sessionId, playerName }) {
   const [session, setSession] = useState(null);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
 
   async function loadState() {
     try {
-      setError('');
       const data = await apiGet(`/api/sessions/${sessionId}/state`);
       setSession(data);
-    } catch (e) {
-      setError(e.message);
+      setError("");
+    } catch (err) {
+      setError(err.message);
     }
   }
 
@@ -25,96 +30,73 @@ export default function GameFlow({ sessionId, pseudo, onVictory, onDefeat }) {
     loadState();
   }, [sessionId]);
 
-  const suivis = session?.suivis ?? [];
-  const orderedSuivis = useMemo(() => suivis.slice().sort((a, b) => a.ordre - b.ordre), [suivis]);
-  const prochain = orderedSuivis.find((s) => !s.termine);
-  const doneCount = orderedSuivis.filter((s) => s.termine).length;
-  const progress = orderedSuivis.length ? (doneCount / orderedSuivis.length) * 100 : 0;
-  const fragments = orderedSuivis.map((s, index) => (s.termine ? FRAGMENTS[index] : '????'));
+  const nextGame = useMemo(() => {
+    if (!session?.suivis) return null;
+    return [...session.suivis]
+      .filter((item) => !item.termine)
+      .sort((a, b) => a.ordre - b.ordre)[0] || null;
+  }, [session]);
 
-  if (error) {
+  if (error) return <section className="panel"><p className="error-text">{error}</p></section>;
+  if (!session) return <section className="panel"><p>Chargement de la mission...</p></section>;
+
+  if (session.sessionExpiree) {
     return (
-      <div className="glass-card center-card">
-        <div className="error-box" style={{ marginBottom: 0 }}>{error}</div>
-      </div>
-    );
-  }
-
-  if (!session) {
-    return (
-      <div className="glass-card center-card">
-        <p>Chargement de la session...</p>
-      </div>
-    );
-  }
-
-  const header = (
-    <>
-      <section className="glass-card" style={{ padding: 26 }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
-          <div>
-            <p style={{ marginTop: 0, opacity: 0.72 }}>Mission en cours</p>
-            <h2 style={{ marginBottom: 8 }}>Bonjour {pseudo || session.joueur?.pseudo || 'joueur'} 👋</h2>
-            <p style={{ margin: 0, opacity: 0.72 }}>
-              Session #{session.sessionId} · PIN {session.codePin} · Score total {session.score}
-            </p>
-          </div>
-          <div className="status-chip active">{doneCount} / {orderedSuivis.length} terminés</div>
-        </div>
-
-        <div style={{ marginTop: 18 }}>
-          <div className="progress"><span style={{ width: `${progress}%` }} /></div>
-        </div>
+      <section className="panel center-panel">
+        <p className="eyebrow">Temps écoulé</p>
+        <h2>Mission terminée</h2>
+        <p className="muted">Le temps de la session est dépassé.</p>
       </section>
-
-      <section className="glass-card" style={{ padding: 24 }}>
-        <h3 style={{ marginTop: 0 }}>Fragments du code</h3>
-        <div className="fragment-row">
-          {fragments.map((fragment, index) => (
-            <div key={index} className="fragment-card">
-              <div>Fragment {index + 1}</div>
-              <div className="fragment-code">{fragment}</div>
-            </div>
-          ))}
-        </div>
-      </section>
-    </>
-  );
-
-  if (!prochain) {
-    return (
-      <div style={{ width: 'min(980px, 100%)', margin: '0 auto' }} className="layout-stack">
-        {header}
-        <SafeGame
-          fragments={FRAGMENTS}
-          score={session.score}
-          onVictory={() => onVictory?.({ session, finalCode: FRAGMENTS.join('') })}
-          onDefeat={() => onDefeat?.({ session, finalCode: FRAGMENTS.join('') })}
-        />
-      </div>
     );
   }
-
-  const commonProps = {
-    sessionId,
-    miniJeuId: prochain.miniJeuId,
-    onComplete: loadState,
-  };
 
   return (
-    <div style={{ width: 'min(980px, 100%)', margin: '0 auto' }} className="layout-stack">
-      {header}
+    <div className="game-layout">
+      <aside className="panel sidebar-panel">
+        <p className="eyebrow">Progression</p>
+        <h2>{playerName || "Joueur"}</h2>
+        <p className="muted">Temps restant : {formatTime(session.tempsRestant)}</p>
+        <p className="muted">Score : {session.score}</p>
 
-      {prochain.type === 'tri' && <TriGame {...commonProps} />}
-      {prochain.type === 'sequence' && <SequenceGame {...commonProps} />}
-      {prochain.type === 'quiz' && <QuizGame {...commonProps} />}
+        <div className="subpanel no-margin-bottom">
+          <h3>Fragments</h3>
+          <div className="fragment-row">
+            {session.inventaireCodes?.map((item) => (
+              <div className="fragment-box" key={item.id}>
+                {item.estValide ? item.code.fragment : "????"}
+              </div>
+            ))}
+          </div>
+        </div>
 
-      {!['tri', 'sequence', 'quiz'].includes(prochain.type) && (
-        <section className="glass-card" style={{ padding: 28 }}>
-          <h3>Mini-jeu non géré</h3>
-          <p>Le type “{prochain.type}” n’est pas encore implémenté côté front.</p>
-        </section>
-      )}
+        <div className="subpanel no-margin-bottom">
+          <h3>Mini-jeux</h3>
+          <div className="card-list compact-list">
+            {session.suivis.map((suivi) => (
+              <div className="mini-card" key={suivi.id}>
+                <div className="mini-card-head">
+                  <strong>{suivi.nom}</strong>
+                  <span className={suivi.termine ? "badge success" : "badge pending"}>
+                    {suivi.termine ? "OK" : "..."}
+                  </span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </aside>
+
+      <main>
+        {!nextGame ? (
+          <SafeGame sessionId={sessionId} onSuccess={loadState} />
+        ) : nextGame.type === "tri" ? (
+          <TriGame sessionId={sessionId} miniJeuId={nextGame.miniJeuId} onComplete={loadState} />
+        ) : nextGame.type === "sequence" ? (
+          <SequenceGame sessionId={sessionId} miniJeuId={nextGame.miniJeuId} onComplete={loadState} />
+        ) : (
+          <QuizGame sessionId={sessionId} miniJeuId={nextGame.miniJeuId} onComplete={loadState} />
+        )}
+      </main>
     </div>
   );
 }

@@ -1,147 +1,132 @@
-import { useEffect, useState } from 'react';
-import { apiGet, apiPost } from '../api';
+import { useEffect, useState } from "react";
+import { apiGet, apiPost } from "../api";
 
-function shuffle(array) {
-  return [...array].sort(() => Math.random() - 0.5);
-}
-
-export default function TriGame({ sessionId, miniJeuId = 1, onComplete }) {
+export default function TriGame({ sessionId, miniJeuId, onComplete }) {
   const [game, setGame] = useState(null);
-  const [items, setItems] = useState([]);
-  const [cosmetiques, setCosmetiques] = useState([]);
-  const [nonCosmetiques, setNonCosmetiques] = useState([]);
-  const [selected, setSelected] = useState(null);
-  const [startedAt, setStartedAt] = useState(null);
-  const [error, setError] = useState('');
+  const [selected, setSelected] = useState({});
+  const [startedAt, setStartedAt] = useState(0);
+  const [error, setError] = useState("");
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
     async function loadGame() {
       try {
-        setError('');
         const data = await apiGet(`/api/minijeux/${miniJeuId}/contenu`);
         setGame(data);
-        setItems(shuffle(data.items || []));
         setStartedAt(Date.now());
-      } catch (e) {
-        setError(e.message);
+      } catch (err) {
+        setError(err.message);
       }
     }
 
     loadGame();
   }, [miniJeuId]);
 
-  function removeFromAll(id) {
-    setItems((prev) => prev.filter((item) => item.id !== id));
-    setCosmetiques((prev) => prev.filter((item) => item.id !== id));
-    setNonCosmetiques((prev) => prev.filter((item) => item.id !== id));
-  }
-
-  function handleSelectItem(item) {
-    setSelected((prev) => (prev?.id === item.id ? null : item));
-  }
-
-  function handleDropToZone(target) {
-    if (!selected) return;
-    removeFromAll(selected.id);
-    if (target === 'cosmetique') setCosmetiques((prev) => [...prev, selected]);
-    if (target === 'nonCosmetique') setNonCosmetiques((prev) => [...prev, selected]);
-    setSelected(null);
-  }
-
-  function handleReturnToPool(item) {
-    removeFromAll(item.id);
-    setItems((prev) => [...prev, item]);
-    setSelected(null);
+  function setChoice(itemId, zone) {
+    setSelected((prev) => ({ ...prev, [itemId]: zone }));
   }
 
   async function validate() {
-    if (!game || saving) return;
-
-    const temps = Math.floor((Date.now() - startedAt) / 1000);
-    const nbCosmetiqueAtt = cosmetiques.filter((item) => item.estCosmetique).length;
-    const nbNonCosmetiqueAtt = nonCosmetiques.filter((item) => !item.estCosmetique).length;
-    const score = nbCosmetiqueAtt + nbNonCosmetiqueAtt;
+    if (!game) return;
+    setSaving(true);
+    setError("");
 
     try {
-      setSaving(true);
-      await apiPost(`/api/sessions/${sessionId}/minijeux/${miniJeuId}/complete`, {
-        score,
-        temps,
-        nbCosmetiqueAtt,
-        nbNonCosmetiqueAtt,
-      });
-      onComplete?.();
-    } catch (e) {
-      setError(e.message);
+      const total = game.items.length;
+      let score = 0;
+      let nbCosmetiqueAtt = 0;
+      let nbNonCosmetiqueAtt = 0;
+
+      for (const item of game.items) {
+        const choice = selected[item.id];
+        if (choice === "cosmetique") nbCosmetiqueAtt += 1;
+        if (choice === "nonCosmetique") nbNonCosmetiqueAtt += 1;
+
+        const correct =
+          (item.estCosmetique && choice === "cosmetique") ||
+          (!item.estCosmetique && choice === "nonCosmetique");
+
+        if (correct) score += 1;
+      }
+
+      if (Object.keys(selected).length !== total) {
+        throw new Error("Il faut trier tous les produits avant de valider.");
+      }
+
+      const temps = Math.floor((Date.now() - startedAt) / 1000);
+
+      await apiPost(
+        `/api/sessions/${sessionId}/minijeux/${miniJeuId}/complete`,
+        {
+          score,
+          temps,
+          nbCosmetiqueAtt,
+          nbNonCosmetiqueAtt,
+        },
+      );
+
+      onComplete();
+    } catch (err) {
+      setError(err.message);
     } finally {
       setSaving(false);
     }
   }
 
-  if (error) {
-    return <div className="error-box">{error}</div>;
-  }
-
-  if (!game) {
-    return <section className="glass-card" style={{ padding: 26 }}><p>Chargement du mini-jeu...</p></section>;
-  }
-
-  const allPlaced = items.length === 0;
+  if (error && !game)
+    return (
+      <section className="panel">
+        <p className="error-text">{error}</p>
+      </section>
+    );
+  if (!game)
+    return (
+      <section className="panel">
+        <p>Chargement du jeu de tri...</p>
+      </section>
+    );
 
   return (
-    <section className="glass-card" style={{ padding: 26 }}>
-      <p style={{ marginTop: 0, opacity: 0.72 }}>Mini-jeu 1</p>
-      <h2 style={{ marginBottom: 8 }}>{game.nom}</h2>
-      <p style={{ opacity: 0.74 }}>
-        Sélectionne un produit puis clique sur la bonne zone. L’objectif est de distinguer les produits cosmétiques des autres.
-      </p>
+    <section className="panel">
+      <p className="eyebrow">Mini-jeu 1</p>
+      <h2>{game.nom}</h2>
+      <p className="muted">Choisis la bonne catégorie pour chaque produit.</p>
 
-      <div className="mini-card" style={{ marginTop: 20 }}>
-        <h3 style={{ marginTop: 0 }}>Produits à trier</h3>
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10 }}>
-          {items.length === 0 && <p style={{ opacity: 0.6 }}>Tous les produits ont été placés.</p>}
-          {items.map((item) => (
-            <button
-              key={item.id}
-              className={selected?.id === item.id ? 'primary-btn' : 'ghost-btn'}
-              onClick={() => handleSelectItem(item)}
-            >
-              {item.nomProduit}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      <div className="two-col" style={{ width: '100%', marginTop: 20 }}>
-        {[
-          { key: 'cosmetique', title: '💄 Cosmétique', items: cosmetiques, bg: 'rgba(244, 114, 182, 0.08)' },
-          { key: 'nonCosmetique', title: '🚫 Non cosmétique', items: nonCosmetiques, bg: 'rgba(96, 165, 250, 0.09)' },
-        ].map((zone) => (
-          <div
-            key={zone.key}
-            className="mini-card"
-            onClick={() => handleDropToZone(zone.key)}
-            style={{ background: zone.bg, cursor: selected ? 'pointer' : 'default' }}
-          >
-            <h3 style={{ marginTop: 0 }}>{zone.title}</h3>
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
-              {zone.items.length === 0 && <p style={{ opacity: 0.62 }}>{selected ? 'Clique ici pour déposer' : 'Aucun produit'}</p>}
-              {zone.items.map((item) => (
-                <button key={item.id} className="ghost-btn" onClick={(e) => { e.stopPropagation(); handleReturnToPool(item); }}>
-                  {item.nomProduit} ✕
-                </button>
-              ))}
+      <div className="card-list">
+        {game.items.map((item) => (
+          <div className="mini-card" key={item.id}>
+            <strong>{item.nomProduit}</strong>
+            <div className="choice-row">
+              <button
+                className={
+                  selected[item.id] === "cosmetique"
+                    ? "small-button active"
+                    : "small-button"
+                }
+                onClick={() => setChoice(item.id, "cosmetique")}
+              >
+                Cosmétique
+              </button>
+              <button
+                className={
+                  selected[item.id] === "nonCosmetique"
+                    ? "small-button active"
+                    : "small-button"
+                }
+                onClick={() => setChoice(item.id, "nonCosmetique")}
+              >
+                Non cosmétique
+              </button>
             </div>
           </div>
         ))}
       </div>
 
-      <div className="actions-row" style={{ marginTop: 20 }}>
-        <button className="primary-btn" onClick={validate} disabled={!allPlaced || saving}>
-          {saving ? 'Validation...' : 'Valider le tri'}
-        </button>
-      </div>
+      {error && <p className="error-text">{error}</p>}
+
+      <button className="primary-button" onClick={validate} disabled={saving}>
+        {saving ? "Validation..." : "Valider le tri"}
+      </button>
     </section>
   );
 }
