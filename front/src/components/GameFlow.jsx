@@ -1,120 +1,168 @@
-import { useEffect, useMemo, useState } from 'react';
-import { apiGet } from '../api';
-import QuizGame from './QuizGame';
-import SequenceGame from './SequenceGame';
-import TriGame from './TriGame';
-import SafeGame from './SafeGame';
+import { useEffect, useMemo, useState } from "react";
+import { apiGet } from "../api";
+import TriGame from "./TriGame";
+import SequenceGame from "./SequenceGame";
+import QuizGame from "./QuizGame";
+import SafeGame from "./SafeGame";
 
-const FRAGMENTS = ['FORM', '1223', 'RECY'];
+function formatTime(totalSeconds) {
+  const seconds = Math.max(0, totalSeconds || 0);
+  const minutes = Math.floor(seconds / 60);
+  const remaining = seconds % 60;
+  return `${String(minutes).padStart(2, "0")}:${String(remaining).padStart(2, "0")}`;
+}
 
-export default function GameFlow({ sessionId, pseudo, onVictory, onDefeat }) {
-  const [session, setSession] = useState(null);
-  const [error, setError] = useState('');
+export default function GameFlow({ sessionId, sessionJoueurId, pseudo, onQuit }) {
+  const [state, setState] = useState(null);
+  const [selectedGameId, setSelectedGameId] = useState("");
+  const [error, setError] = useState("");
 
   async function loadState() {
     try {
-      setError('');
-      const data = await apiGet(`/api/sessions/${sessionId}/state`);
-      setSession(data);
-    } catch (e) {
-      setError(e.message);
+      const data = await apiGet(`/api/session-joueurs/${sessionJoueurId}/state`);
+      setState(data);
+      setError("");
+    } catch (err) {
+      setError(err.message || "Erreur lors du chargement de la mission.");
     }
   }
 
   useEffect(() => {
+    if (!sessionJoueurId) return;
     loadState();
-  }, [sessionId]);
+    const interval = setInterval(loadState, 4000);
+    return () => clearInterval(interval);
+  }, [sessionJoueurId]);
 
-  const suivis = session?.suivis ?? [];
-  const orderedSuivis = useMemo(() => suivis.slice().sort((a, b) => a.ordre - b.ordre), [suivis]);
-  const prochain = orderedSuivis.find((s) => !s.termine);
-  const doneCount = orderedSuivis.filter((s) => s.termine).length;
-  const progress = orderedSuivis.length ? (doneCount / orderedSuivis.length) * 100 : 0;
-  const fragments = orderedSuivis.map((s, index) => (s.termine ? FRAGMENTS[index] : '????'));
+  const availableGames = useMemo(() => {
+    return [...(state?.suivis || [])].sort((a, b) => a.ordre - b.ordre);
+  }, [state]);
+
+  useEffect(() => {
+    if (!availableGames.length) return;
+    const selectedStillExists = availableGames.some(
+      (game) => String(game.miniJeuId) === String(selectedGameId)
+    );
+    if (!selectedGameId || !selectedStillExists) {
+      const firstPlayable = availableGames.find((game) => !game.termine) || availableGames[0];
+      setSelectedGameId(String(firstPlayable.miniJeuId));
+    }
+  }, [availableGames, selectedGameId]);
+
+  const selectedGame = availableGames.find(
+    (game) => String(game.miniJeuId) === String(selectedGameId)
+  );
+  const allGamesCompleted = availableGames.length > 0 && availableGames.every((game) => game.termine);
+  const currentPseudo = state?.joueur?.pseudo || pseudo;
 
   if (error) {
     return (
-      <div className="glass-card center-card">
-        <div className="error-box" style={{ marginBottom: 0 }}>{error}</div>
-      </div>
-    );
-  }
-
-  if (!session) {
-    return (
-      <div className="glass-card center-card">
-        <p>Chargement de la session...</p>
-      </div>
-    );
-  }
-
-  const header = (
-    <>
-      <section className="glass-card" style={{ padding: 26 }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
-          <div>
-            <p style={{ marginTop: 0, opacity: 0.72 }}>Mission en cours</p>
-            <h2 style={{ marginBottom: 8 }}>Bonjour {pseudo || session.joueur?.pseudo || 'joueur'} 👋</h2>
-            <p style={{ margin: 0, opacity: 0.72 }}>
-              Session #{session.sessionId} · PIN {session.codePin} · Score total {session.score}
-            </p>
-          </div>
-          <div className="status-chip active">{doneCount} / {orderedSuivis.length} terminés</div>
-        </div>
-
-        <div style={{ marginTop: 18 }}>
-          <div className="progress"><span style={{ width: `${progress}%` }} /></div>
-        </div>
+      <section className="panel center-panel">
+        <p className="error-text">{error}</p>
+        <button className="secondary-button" onClick={onQuit}>Retour accueil</button>
       </section>
+    );
+  }
 
-      <section className="glass-card" style={{ padding: 24 }}>
-        <h3 style={{ marginTop: 0 }}>Fragments du code</h3>
-        <div className="fragment-row">
-          {fragments.map((fragment, index) => (
-            <div key={index} className="fragment-card">
-              <div>Fragment {index + 1}</div>
-              <div className="fragment-code">{fragment}</div>
+  if (!state) {
+    return <section className="panel"><p>Chargement de la mission...</p></section>;
+  }
+
+  if (state.sessionExpiree || state.estGameOver) {
+    return (
+      <section className="panel center-panel">
+        <p className="eyebrow">Mission arrêtée</p>
+        <h2>Game over</h2>
+        <p className="muted">
+          {state.sessionExpiree ? "Le temps de la session est écoulé." : "La partie est terminée."}
+        </p>
+        <button className="secondary-button" onClick={onQuit}>Retour accueil</button>
+      </section>
+    );
+  }
+
+  if (state.aGagne) {
+    return (
+      <section className="panel center-panel">
+        <p className="eyebrow">Mission réussie</p>
+        <h2>Bravo {currentPseudo} !</h2>
+        <p className="muted">Tu as trouvé le code final et terminé la mission.</p>
+        <p><strong>Score final :</strong> {state.score}</p>
+        <button className="secondary-button" onClick={onQuit}>Retour accueil</button>
+      </section>
+    );
+  }
+
+  return (
+    <div className="game-layout">
+      <aside className="panel sidebar-panel">
+        <p className="eyebrow">Joueur</p>
+        <h2>{currentPseudo}</h2>
+        <p className="muted">Session #{state.sessionId} — PIN {state.codePin}</p>
+        <p className="muted">Temps restant : {formatTime(state.tempsRestant)}</p>
+        <p className="muted">Score : {state.score}</p>
+
+        <div className="section-line">
+          <strong>Fragments débloqués</strong>
+          <div className="fragment-row">
+            {(state.inventaireCodes || []).map((inv) => (
+              <div className="fragment-box" key={inv.id}>
+                {inv.estValide ? inv.code.fragment : "????"}
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="section-line">
+          <strong>Mini-jeux</strong>
+          {availableGames.length === 0 ? (
+            <p className="muted">Aucun mini-jeu trouvé pour ce joueur.</p>
+          ) : (
+            <select
+              className="input"
+              value={selectedGameId}
+              onChange={(event) => setSelectedGameId(event.target.value)}
+            >
+              {availableGames.map((game) => (
+                <option key={game.id} value={game.miniJeuId}>
+                  {game.ordre}. {game.nom} {game.termine ? "(validé)" : ""}
+                </option>
+              ))}
+            </select>
+          )}
+        </div>
+
+        <div className="mini-list">
+          {availableGames.map((game) => (
+            <div className="mini-card" key={game.id}>
+              <div className="mini-card-head">
+                <strong>{game.nom}</strong>
+                <span className={game.termine ? "badge success" : "badge pending"}>
+                  {game.termine ? "Validé" : "À faire"}
+                </span>
+              </div>
+              <div className="inline-meta small">
+                <span>Score : {game.score}</span>
+                <span>Temps : {game.temps}s</span>
+              </div>
             </div>
           ))}
         </div>
-      </section>
-    </>
-  );
+      </aside>
 
-  if (!prochain) {
-    return (
-      <div style={{ width: 'min(980px, 100%)', margin: '0 auto' }} className="layout-stack">
-        {header}
-        <SafeGame
-          fragments={FRAGMENTS}
-          score={session.score}
-          onVictory={() => onVictory?.({ session, finalCode: FRAGMENTS.join('') })}
-          onDefeat={() => onDefeat?.({ session, finalCode: FRAGMENTS.join('') })}
-        />
-      </div>
-    );
-  }
-
-  const commonProps = {
-    sessionId,
-    miniJeuId: prochain.miniJeuId,
-    onComplete: loadState,
-  };
-
-  return (
-    <div style={{ width: 'min(980px, 100%)', margin: '0 auto' }} className="layout-stack">
-      {header}
-
-      {prochain.type === 'tri' && <TriGame {...commonProps} />}
-      {prochain.type === 'sequence' && <SequenceGame {...commonProps} />}
-      {prochain.type === 'quiz' && <QuizGame {...commonProps} />}
-
-      {!['tri', 'sequence', 'quiz'].includes(prochain.type) && (
-        <section className="glass-card" style={{ padding: 28 }}>
-          <h3>Mini-jeu non géré</h3>
-          <p>Le type “{prochain.type}” n’est pas encore implémenté côté front.</p>
-        </section>
-      )}
+      <main>
+        {allGamesCompleted ? (
+          <SafeGame sessionJoueurId={sessionJoueurId} onSuccess={loadState} />
+        ) : selectedGame?.type === "tri" ? (
+          <TriGame sessionJoueurId={sessionJoueurId} miniJeuId={selectedGame.miniJeuId} onComplete={loadState} />
+        ) : selectedGame?.type === "sequence" ? (
+          <SequenceGame sessionJoueurId={sessionJoueurId} miniJeuId={selectedGame.miniJeuId} onComplete={loadState} />
+        ) : selectedGame?.type === "quiz" ? (
+          <QuizGame sessionJoueurId={sessionJoueurId} miniJeuId={selectedGame.miniJeuId} onComplete={loadState} />
+        ) : (
+          <section className="panel"><p>Choisis un mini-jeu.</p></section>
+        )}
+      </main>
     </div>
   );
 }

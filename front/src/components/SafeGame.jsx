@@ -1,52 +1,46 @@
-import { useMemo, useState } from 'react';
+import { useState } from "react";
+import { apiPost } from "../api";
 
-export default function SafeGame({ fragments, score, onVictory, onDefeat }) {
-  const [value, setValue] = useState('');
-  const [message, setMessage] = useState('');
-  const finalCode = useMemo(() => fragments.join(''), [fragments]);
+export default function SafeGame({ sessionJoueurId, onSuccess }) {
+  const [code, setCode] = useState("");
+  const [message, setMessage] = useState("");
+  const [error, setError] = useState("");
 
-  function validate() {
-    if (value.toUpperCase() === finalCode) {
-      setMessage('Code correct ! Le coffre est déverrouillé.');
-      onVictory?.();
-      return;
+  async function handleSubmit(e) {
+    e.preventDefault();
+    setError("");
+    setMessage("");
+
+    try {
+      const data = await apiPost(
+        `/api/session-joueurs/${sessionJoueurId}/validate-code`,
+        { code }
+      );
+      setMessage(data.message);
+      onSuccess();
+    } catch (err) {
+      setError(err.message);
+      onSuccess();
     }
-
-    setMessage('Code incorrect. La mission échoue pour le moment.');
-    onDefeat?.();
   }
 
   return (
-    <section className="glass-card" style={{ padding: 28, textAlign: 'center' }}>
-      <p style={{ marginTop: 0, opacity: 0.72 }}>Phase finale</p>
-      <h2 style={{ fontSize: '2.2rem', marginBottom: 8 }}>Coffre-fort du laboratoire</h2>
-      <p style={{ maxWidth: 660, margin: '0 auto', opacity: 0.74, lineHeight: 1.7 }}>
-        Tu as terminé les 3 mini-jeux. Assemble maintenant les fragments pour saisir le code final.
-      </p>
+    <section className="panel center-panel">
+      <p className="eyebrow">Coffre final</p>
+      <h2>Entrer le code</h2>
+      <p className="muted">Tu as 3 tentatives maximum.</p>
 
-      <div className="fragment-row" style={{ marginTop: 20 }}>
-        {fragments.map((fragment, index) => (
-          <div key={index} className="fragment-card">
-            <div>Fragment {index + 1}</div>
-            <div className="fragment-code">{fragment}</div>
-          </div>
-        ))}
-      </div>
-
-      <div className="mini-card" style={{ marginTop: 24, maxWidth: 520, marginInline: 'auto' }}>
-        <p style={{ marginTop: 0, opacity: 0.72 }}>Score final provisoire : {score}</p>
+      <form className="stack" onSubmit={handleSubmit}>
         <input
-          className="code-input"
-          value={value}
-          onChange={(e) => setValue(e.target.value.toUpperCase())}
-          placeholder="Entre le code final"
+          className="input"
+          value={code}
+          onChange={(e) => setCode(e.target.value.toUpperCase())}
+          placeholder="ABCD1234WXYZ"
         />
-        <div className="actions-row" style={{ justifyContent: 'center', marginTop: 16 }}>
-          <button className="danger-btn" onClick={() => setValue('')}>Effacer</button>
-          <button className="primary-btn" onClick={validate} disabled={!value}>Valider le code</button>
-        </div>
-        {message && <div className={message.includes('correct') ? 'success-box' : 'error-box'} style={{ marginTop: 16 }}>{message}</div>}
-      </div>
+        {message && <p className="success-text">{message}</p>}
+        {error && <p className="error-text">{error}</p>}
+        <button className="primary-button" type="submit">Valider le code</button>
+      </form>
     </section>
   );
 }

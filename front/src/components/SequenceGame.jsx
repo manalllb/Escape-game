@@ -1,133 +1,97 @@
-import { useEffect, useMemo, useState } from 'react';
-import { apiGet, apiPost } from '../api';
+import { useEffect, useMemo, useState } from "react";
+import { apiGet, apiPost } from "../api";
 
 function shuffle(array) {
   return [...array].sort(() => Math.random() - 0.5);
 }
 
-export default function SequenceGame({ sessionId, miniJeuId = 2, onComplete }) {
+export default function SequenceGame({ sessionJoueurId, miniJeuId, onComplete }) {
   const [game, setGame] = useState(null);
-  const [choices, setChoices] = useState([]);
   const [selected, setSelected] = useState([]);
-  const [startedAt, setStartedAt] = useState(null);
-  const [error, setError] = useState('');
-  const [saving, setSaving] = useState(false);
+  const [choices, setChoices] = useState([]);
+  const [startedAt, setStartedAt] = useState(Date.now());
+  const [message, setMessage] = useState("");
+  const [error, setError] = useState("");
 
   useEffect(() => {
-    async function loadGame() {
+    async function load() {
       try {
-        setError('');
         const data = await apiGet(`/api/minijeux/${miniJeuId}/contenu`);
         setGame(data);
         setChoices(shuffle(data.etapes || []));
+        setSelected([]);
         setStartedAt(Date.now());
-      } catch (e) {
-        setError(e.message);
+        setMessage("");
+        setError("");
+      } catch (err) {
+        setError(err.message);
       }
     }
-
-    loadGame();
+    load();
   }, [miniJeuId]);
 
-  const orderedExpected = useMemo(() => {
-    if (!game?.etapes) return [];
-    return [...game.etapes].sort((a, b) => a.ordreAttendu - b.ordreAttendu);
+  const expected = useMemo(() => {
+    return [...(game?.etapes || [])].sort((a, b) => a.ordreAttendu - b.ordreAttendu);
   }, [game]);
 
-  function handleSelect(step) {
-    if (selected.find((item) => item.id === step.id)) return;
-    setSelected((prev) => [...prev, step]);
-  }
-
-  function handleRemove(stepId) {
-    setSelected((prev) => prev.filter((item) => item.id !== stepId));
-  }
-
-  function resetSelection() {
-    setSelected([]);
-    setChoices((prev) => shuffle(prev));
-  }
-
-  async function validateSequence() {
-    if (!game || saving) return;
-
-    const temps = Math.floor((Date.now() - startedAt) / 1000);
-    const isCorrect =
-      selected.length === orderedExpected.length &&
-      selected.every((step, index) => step.id === orderedExpected[index].id);
-
-    const score = isCorrect ? orderedExpected.length : 0;
+  async function handleValidate() {
+    const score = selected.reduce((acc, step, index) => {
+      return acc + (expected[index]?.id === step.id ? 1 : 0);
+    }, 0);
 
     try {
-      setSaving(true);
-      await apiPost(`/api/sessions/${sessionId}/minijeux/${miniJeuId}/complete`, {
-        score,
-        temps,
-        nbCosmetiqueAtt: 0,
-        nbNonCosmetiqueAtt: 0,
-      });
-      onComplete?.();
-    } catch (e) {
-      setError(e.message);
-    } finally {
-      setSaving(false);
+      const temps = Math.floor((Date.now() - startedAt) / 1000);
+      const result = await apiPost(
+        `/api/session-joueurs/${sessionJoueurId}/minijeux/${miniJeuId}/complete`,
+        { score, temps, nbCosmetiqueAtt: 0, nbNonCosmetiqueAtt: 0 }
+      );
+      setMessage(result.message);
+      onComplete();
+    } catch (err) {
+      setError(err.message);
     }
   }
 
-  if (error) return <div className="error-box">{error}</div>;
-  if (!game) return <section className="glass-card" style={{ padding: 26 }}><p>Chargement du mini-jeu...</p></section>;
+  if (error) return <section className="panel"><p className="error-text">{error}</p></section>;
+  if (!game) return <section className="panel"><p>Chargement de la séquence...</p></section>;
 
   return (
-    <section className="glass-card" style={{ padding: 26 }}>
-      <p style={{ marginTop: 0, opacity: 0.72 }}>Mini-jeu 2</p>
-      <h2 style={{ marginBottom: 8 }}>{game.nom}</h2>
-      <p style={{ opacity: 0.74 }}>
-        Clique les étapes dans le bon ordre pour reconstituer la routine de soin parfaite.
-      </p>
+    <section className="panel">
+      <p className="eyebrow">Mini-jeu séquence</p>
+      <h2>{game.nom}</h2>
+      <p className="muted">Clique les étapes dans l'ordre qui te semble correct.</p>
 
-      <div className="mini-card" style={{ marginTop: 20 }}>
-        <h3 style={{ marginTop: 0 }}>Routine en cours</h3>
-        <div style={{ minHeight: 90, display: 'flex', flexWrap: 'wrap', gap: 10 }}>
-          {selected.length === 0 && <p style={{ opacity: 0.62 }}>Aucune étape sélectionnée.</p>}
+      <div className="question-card">
+        <strong>Ordre choisi</strong>
+        <div className="chip-row">
+          {selected.length === 0 && <span className="muted">Aucune étape choisie</span>}
           {selected.map((step, index) => (
-            <button key={step.id} className="secondary-btn" onClick={() => handleRemove(step.id)}>
-              {index + 1}. {step.libelle}
-            </button>
+            <span className="chip" key={`${step.id}-${index}`}>{index + 1}. {step.libelle}</span>
           ))}
         </div>
       </div>
 
-      <div className="mini-card" style={{ marginTop: 20 }}>
-        <h3 style={{ marginTop: 0 }}>Étapes disponibles</h3>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 12 }}>
-          {choices.map((step) => {
-            const alreadySelected = selected.some((item) => item.id === step.id);
-            return (
-              <button
-                key={step.id}
-                className={alreadySelected ? 'secondary-btn' : 'ghost-btn'}
-                disabled={alreadySelected}
-                onClick={() => handleSelect(step)}
-                style={{ textAlign: 'left' }}
-              >
-                <div style={{ fontWeight: 800 }}>{step.libelle}</div>
-                <div style={{ fontSize: 13, opacity: 0.72, marginTop: 6 }}>Zone : {step.zoneApp}</div>
-              </button>
-            );
-          })}
-        </div>
+      <div className="stack">
+        {choices.map((step) => {
+          const alreadySelected = selected.some((item) => item.id === step.id);
+          return (
+            <button
+              key={step.id}
+              className="secondary-button left-button"
+              disabled={alreadySelected}
+              onClick={() => setSelected((prev) => [...prev, step])}
+            >
+              {step.libelle} — {step.zoneApp}
+            </button>
+          );
+        })}
       </div>
 
-      <div className="actions-row" style={{ marginTop: 20 }}>
-        <button
-          className="primary-btn"
-          onClick={validateSequence}
-          disabled={selected.length !== orderedExpected.length || saving}
-        >
-          {saving ? 'Validation...' : 'Valider la routine'}
-        </button>
-        <button className="ghost-btn" onClick={resetSelection}>Réinitialiser</button>
+      <div className="button-row">
+        <button className="secondary-button" onClick={() => setSelected([])}>Réinitialiser</button>
+        <button className="primary-button" onClick={handleValidate}>Valider</button>
       </div>
+      {message && <p className="success-text">{message}</p>}
     </section>
   );
 }

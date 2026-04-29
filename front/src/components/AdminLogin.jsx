@@ -1,47 +1,52 @@
-export default function AdminLogin({
-  adminEmail,
-  setAdminEmail,
-  adminPassword,
-  setAdminPassword,
-  onSubmit,
-  loading,
-  error,
-}) {
+import { useState } from "react";
+import { apiPost } from "../api";
+
+export default function AdminLogin({ onSuccess }) {
+  const [adminEmail, setAdminEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+
+  async function handleSubmit(e) {
+    e.preventDefault();
+    setLoading(true);
+    setError("");
+
+    try {
+      const data = await apiPost("/api/sessions", { adminEmail, password });
+      onSuccess({ ...data, adminEmail });
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  }
+
   return (
-    <section className="glass-card center-card">
-      <p style={{ marginTop: 0, opacity: 0.72 }}>Connexion administrateur</p>
-      <h2 style={{ fontSize: "2rem", marginBottom: 10 }}>Administrateur</h2>
-      <p style={{ marginTop: 0, opacity: 0.72 }}>
-        Seuls les administrateurs autorisés peuvent créer une session.
-      </p>
+    <section className="panel center-panel">
+      <p className="eyebrow">Connexion admin</p>
+      <h2>Créer une session</h2>
 
-      {error && <div className="error-box">{error}</div>}
-
-      <div className="layout-stack">
+      <form className="stack" onSubmit={handleSubmit}>
         <input
           className="input"
           type="email"
+          placeholder="Email admin"
           value={adminEmail}
           onChange={(e) => setAdminEmail(e.target.value)}
-          placeholder="Email admin"
         />
-
         <input
           className="input"
           type="password"
-          value={adminPassword}
-          onChange={(e) => setAdminPassword(e.target.value)}
           placeholder="Mot de passe"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
         />
-
-        <button
-          className="primary-btn"
-          onClick={onSubmit}
-          disabled={!adminEmail || !adminPassword || loading}
-        >
-          {loading ? "Connexion..." : "Créer la session"}
+        {error && <p className="error-text">{error}</p>}
+        <button className="primary-button" type="submit" disabled={loading}>
+          {loading ? "Création..." : "Créer la session"}
         </button>
-      </div>
+      </form>
     </section>
   );
 }
