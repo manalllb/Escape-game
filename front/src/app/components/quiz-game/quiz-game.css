@@ -1,0 +1,411 @@
+/* =============================
+   L'Énigme Écologique — Styles du mini-jeu 3
+   ============================= */
+
+.quiz-game-container {
+  width: 100vw;
+  height: 100vh;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  overflow: hidden;
+  background: linear-gradient(135deg, #e0f2fe 0%, #f3e8ff 50%, #ede9fe 100%);
+  font-family: 'Fredoka', sans-serif;
+}
+
+/* Header */
+.quiz-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 14px 28px;
+  background: linear-gradient(90deg, #a855f7 0%, #7e22ce 100%);
+  color: #fff;
+  flex-shrink: 0;
+  flex-wrap: wrap;
+}
+
+.quiz-header-center {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1;
+  justify-content: center;
+}
+
+.quiz-header-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.2);
+  color: #fff;
+  flex-shrink: 0;
+}
+
+.quiz-header-icon svg {
+  width: 22px;
+  height: 22px;
+}
+
+.quiz-header-center h2 {
+  font-family: 'Fredoka', sans-serif;
+  font-size: 1.15rem;
+  font-weight: 700;
+  margin: 0;
+  line-height: 1.2;
+}
+
+.quiz-header-center p {
+  margin: 2px 0 0;
+  font-size: 0.82rem;
+  opacity: 0.88;
+}
+
+.quiz-header-stats {
+  text-align: right;
+  font-size: 0.88rem;
+  font-weight: 600;
+}
+
+.quiz-timer {
+  opacity: 0.9;
+}
+
+.quiz-timer span {
+  font-variant-numeric: tabular-nums;
+}
+
+.quiz-score {
+  margin-top: 2px;
+  font-size: 1rem;
+  font-weight: 700;
+  color: #fce7f3;
+}
+
+/* Barre de progression */
+.quiz-progress-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 12px 28px;
+  background: rgba(255, 255, 255, 0.96);
+  border-bottom: 1px solid rgba(126, 34, 206, 0.08);
+  flex-shrink: 0;
+  flex-wrap: wrap;
+}
+
+.quiz-progress-label {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #2f2147;
+  white-space: nowrap;
+}
+
+.quiz-progress-track {
+  flex: 1;
+  height: 10px;
+  border-radius: 999px;
+  background: rgba(126, 34, 206, 0.12);
+  overflow: hidden;
+  min-width: 120px;
+}
+
+.quiz-progress-fill {
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #c084fc 0%, #7e22ce 100%);
+  transition: width 0.35s ease;
+}
+
+.quiz-progress-score {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: #16a34a;
+  white-space: nowrap;
+}
+
+/* Zone de jeu */
+.quiz-playfield {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px 28px;
+  overflow: auto;
+}
+
+/* Carte de question */
+.quiz-card {
+  background: #fff;
+  border-radius: 20px;
+  padding: 28px 32px;
+  max-width: 720px;
+  width: 100%;
+  box-shadow: 0 12px 40px rgba(126, 34, 206, 0.1);
+  border: 1px solid rgba(126, 34, 206, 0.06);
+}
+
+.quiz-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.quiz-badge {
+  display: inline-block;
+  padding: 6px 14px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #a855f7 0%, #7e22ce 100%);
+  color: #fff;
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+
+.quiz-remaining {
+  font-size: 0.85rem;
+  color: #7e22ce;
+  font-weight: 600;
+}
+
+.quiz-question {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: #2f2147;
+  margin: 0 0 24px;
+  line-height: 1.45;
+}
+
+/* Réponses */
+.quiz-answers {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.quiz-answer-btn {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 18px;
+  border-radius: 14px;
+  border: 1.5px solid rgba(126, 34, 206, 0.18);
+  background: #fff;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 1rem;
+  color: #2f2147;
+  text-align: left;
+  transition: border-color 0.15s ease, background 0.15s ease, transform 0.1s ease, box-shadow 0.15s ease;
+}
+
+.quiz-answer-btn:hover:not(:disabled) {
+  border-color: #a855f7;
+  background: rgba(168, 85, 247, 0.04);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(126, 34, 206, 0.08);
+}
+
+.quiz-answer-btn:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.quiz-answer-btn:disabled {
+  cursor: default;
+  opacity: 0.6;
+}
+
+.quiz-letter {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #a855f7 0%, #7e22ce 100%);
+  color: #fff;
+  font-size: 0.95rem;
+  font-weight: 800;
+  flex-shrink: 0;
+}
+
+.quiz-answer-text {
+  flex: 1;
+  line-height: 1.4;
+}
+
+/* Feedback overlay */
+.quiz-feedback-overlay {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 15;
+  background: rgba(15, 10, 30, 0.35);
+  backdrop-filter: blur(3px);
+  -webkit-backdrop-filter: blur(3px);
+  animation: fadeIn 0.2s ease;
+}
+
+.quiz-feedback-card {
+  text-align: center;
+  padding: 32px 40px;
+  border-radius: 20px;
+  background: #fff;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+  max-width: 380px;
+  margin: 20px;
+  animation: slideUp 0.3s ease;
+}
+
+.quiz-feedback-card.correct {
+  border: 2px solid #22c55e;
+}
+
+.quiz-feedback-card.wrong {
+  border: 2px solid #ef4444;
+}
+
+.quiz-feedback-icon {
+  font-size: 3rem;
+  line-height: 1;
+  margin-bottom: 10px;
+}
+
+.quiz-feedback-text {
+  font-family: 'Fredoka', sans-serif;
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: #2f2147;
+  margin-bottom: 6px;
+}
+
+.quiz-feedback-sub {
+  font-size: 0.95rem;
+  color: #4b3663;
+  line-height: 1.5;
+}
+
+/* Overlays */
+.quiz-overlay {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 20;
+  background: rgba(255, 255, 255, 0.5);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+}
+
+.start-overlay {
+  background: rgba(255, 255, 255, 0.35);
+}
+
+.success-overlay {
+  background: rgba(34, 197, 94, 0.12);
+}
+
+.defeat-overlay {
+  background: rgba(239, 68, 68, 0.1);
+}
+
+.overlay-card {
+  background: rgba(255, 255, 255, 0.98);
+  padding: 36px 40px;
+  border-radius: 24px;
+  text-align: center;
+  max-width: 440px;
+  margin: 20px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
+  border: 1px solid rgba(126, 34, 206, 0.08);
+}
+
+.overlay-card h3 {
+  font-family: 'Fredoka', sans-serif;
+  font-size: 1.6rem;
+  margin: 0 0 12px;
+  color: #2f2147;
+}
+
+.overlay-card p {
+  margin: 8px 0;
+  color: #4b3663;
+  line-height: 1.55;
+  font-size: 1rem;
+}
+
+.overlay-card .primary-btn {
+  margin-top: 20px;
+  min-width: 180px;
+  padding: 14px 28px;
+  font-size: 1rem;
+}
+
+/* Chargement */
+.quiz-loading {
+  padding: 40px;
+  text-align: center;
+  color: #6b21a8;
+  font-weight: 600;
+  font-size: 1.1rem;
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Responsive */
+@media (max-width: 640px) {
+  .quiz-header {
+    padding: 12px 16px;
+  }
+
+  .quiz-header-center h2 {
+    font-size: 1rem;
+  }
+
+  .quiz-header-stats {
+    text-align: left;
+    width: 100%;
+    display: flex;
+    gap: 12px;
+    justify-content: space-between;
+  }
+
+  .quiz-progress-row {
+    padding: 10px 16px;
+  }
+
+  .quiz-playfield {
+    padding: 12px 16px;
+  }
+
+  .quiz-card {
+    padding: 20px 22px;
+    border-radius: 16px;
+  }
+
+  .quiz-question {
+    font-size: 1.05rem;
+  }
+
+  .quiz-answer-btn {
+    padding: 12px 14px;
+    font-size: 0.95rem;
+  }
+}

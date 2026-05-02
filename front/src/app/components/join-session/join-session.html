@@ -1,0 +1,92 @@
+<!-- Section: Conteneur principal de la page de jointure -->
+<div class="join-wrap">
+  <!-- Section: Carte de connexion joueur -->
+  <div class="join-card glass-card">
+    <!-- Icône de bienvenue -->
+    <div class="join-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+        <circle cx="12" cy="7" r="4"></circle>
+      </svg>
+    </div>
+
+    <!-- En-tête: Titre et sous-titre -->
+    <h2 class="join-title">Bienvenue Joueur !</h2>
+    <p class="join-subtitle">
+      Entre le code PIN pour rejoindre ta session de jeu
+    </p>
+
+    <!-- Section: Message d'erreur (affiché conditionnellement) -->
+    <div *ngIf="error" class="error-box">{{ error }}</div>
+
+    <!-- Section: Formulaire de jointure -->
+    <div class="join-form">
+      <!-- Section: Champ Code PIN -->
+      <div class="field-group">
+        <label>Code PIN de la Session</label>
+        <div class="input-with-icon">
+          <span class="input-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="7.5" cy="15.5" r="5.5"></circle>
+              <path d="M21 3l-9 9"></path>
+              <path d="M15.5 7.5l3 3L22 7l-3-3z"></path>
+            </svg>
+          </span>
+          <input
+            [value]="pin"
+            (input)="onPinChange($any($event).target.value)"
+            placeholder="123456"
+            inputMode="numeric"
+            maxlength="6"
+          />
+        </div>
+        <!-- Indice de format -->
+        <p class="field-hint">Format attendu : 6 chiffres (ex: 561159)</p>
+      </div>
+
+      <!-- Section: Champ Pseudo -->
+      <div class="field-group">
+        <label>Ton pseudo</label>
+        <div class="input-with-icon">
+          <span class="input-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+              <circle cx="12" cy="7" r="4"></circle>
+            </svg>
+          </span>
+          <input
+            [(ngModel)]="pseudo"
+            placeholder="Julien"
+          />
+        </div>
+      </div>
+
+      <!-- Bouton: Soumission du formulaire -->
+      <button
+        class="join-submit-btn"
+        (click)="handleSubmit()"
+        [disabled]="!pin || !pseudo || loading">
+        {{ loading ? 'Connexion...' : 'Rejoindre la Session' }}
+      </button>
+    </div>
+  </div>
+
+  <!-- Section: Carte d'information sur le jeu -->
+  <div class="join-info-card glass-card">
+    <!-- En-tête de la carte info -->
+    <div class="join-info-header">
+      <span class="join-info-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+          <line x1="9" y1="9" x2="15" y2="9"></line>
+          <line x1="9" y1="15" x2="15" y2="15"></line>
+        </svg>
+      </span>
+      <span class="join-info-title">À propos de Mission We Lab</span>
+    </div>
+    <!-- Description du jeu -->
+    <p class="join-info-text">
+      Un escape game éducatif avec 3 jeux passionnants. Demande le code PIN à ton professeur pour commencer l'aventure !
+    </p>
+  </div>
+</div>

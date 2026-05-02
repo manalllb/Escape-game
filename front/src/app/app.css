@@ -1,0 +1,63 @@
+/* ===== Header global ===== */
+
+.topbar {
+  width: min(1100px, calc(100% - 32px));
+  margin: 0 auto 24px;
+  padding: 12px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  box-shadow: 0 4px 20px rgba(126, 34, 206, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.7);
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.brand-badge {
+  width: 40px;
+  height: 40px;
+  display: grid;
+  place-items: center;
+  border-radius: 10px;
+  color: white;
+  background: #7e22ce;
+}
+
+.brand-badge svg {
+  width: 22px;
+  height: 22px;
+}
+
+.brand-title {
+  margin: 0;
+  font-family: 'Fredoka', sans-serif;
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: #7e22ce;
+}
+
+.back-btn {
+  padding: 8px 18px;
+  border-radius: 10px;
+  border: 1.5px solid #7e22ce;
+  background: transparent;
+  color: #7e22ce;
+  font-weight: 600;
+  font-size: 0.92rem;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.back-btn:hover {
+  background: #7e22ce;
+  color: white;
+}

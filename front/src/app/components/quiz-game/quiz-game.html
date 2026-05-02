@@ -1,0 +1,105 @@
+<div *ngIf="error" class="error-box">{{ error }}</div>
+
+<div class="quiz-game-container" *ngIf="quiz || !error">
+  <!-- Header -->
+  <header class="quiz-header">
+    <div class="quiz-header-center">
+      <span class="quiz-header-icon">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="9" y1="9" x2="15" y2="15"></line><line x1="15" y1="9" x2="9" y2="15"></line></svg>
+      </span>
+      <div>
+        <h2>Jeu 3: L'Énigme Écologique</h2>
+        <p>Répondez aux questions sur l'écologie en laboratoire</p>
+      </div>
+    </div>
+    <div class="quiz-header-stats">
+      <div class="quiz-timer">Temps: <span>{{ formatTime(remainingTime) }}</span></div>
+      <div class="quiz-score">Score: {{ score }}</div>
+    </div>
+  </header>
+
+  <!-- Barre de progression -->
+  <div class="quiz-progress-row">
+    <span class="quiz-progress-label">Question {{ index + 1 }}/{{ quiz?.questions?.length ?? 0 }}</span>
+    <div class="quiz-progress-track">
+      <div class="quiz-progress-fill" [style.width.%]="((index + 1) / (quiz?.questions?.length || 1)) * 100"></div>
+    </div>
+    <span class="quiz-progress-score">{{ score }} bonne(s) réponse(s)</span>
+  </div>
+
+  <!-- Zone de jeu -->
+  <div class="quiz-playfield">
+    <div class="quiz-card" *ngIf="currentQuestion">
+      <!-- En-tête de la carte -->
+      <div class="quiz-card-header">
+        <span class="quiz-badge">Question {{ index + 1 }}</span>
+        <span class="quiz-remaining">{{ getRemaining() }} restante(s)</span>
+      </div>
+
+      <!-- Question -->
+      <h3 class="quiz-question">{{ currentQuestion.question }}</h3>
+
+      <!-- Réponses -->
+      <div class="quiz-answers">
+        <button
+          *ngFor="let choice of currentChoices; let i = index"
+          class="quiz-answer-btn"
+          (click)="handleAnswer(choice)"
+          [disabled]="!gameActive || showingFeedback || saving"
+        >
+          <span class="quiz-letter">{{ getLetter(i) }}</span>
+          <span class="quiz-answer-text">{{ choice }}</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Overlay de feedback (correct / incorrect) -->
+  <div *ngIf="showingFeedback" class="quiz-feedback-overlay">
+    <div class="quiz-feedback-card" [class.correct]="lastAnswerCorrect" [class.wrong]="!lastAnswerCorrect">
+      <div class="quiz-feedback-icon">{{ lastAnswerCorrect ? '✅' : '❌' }}</div>
+      <div class="quiz-feedback-text">
+        {{ lastAnswerCorrect ? 'Bonne réponse !' : 'Mauvaise réponse' }}
+      </div>
+      <div class="quiz-feedback-sub" *ngIf="!lastAnswerCorrect">
+        La bonne réponse était : <strong>{{ currentQuestion?.bonneReponse }}</strong>
+      </div>
+    </div>
+  </div>
+
+  <!-- Overlay de démarrage -->
+  <div *ngIf="!gameActive && !gameOver && quiz" class="quiz-overlay start-overlay">
+    <div class="overlay-card">
+      <h3>Prêt à jouer ?</h3>
+      <p>
+        Réponds aux {{ quiz?.questions?.length }} questions sur l'écologie et le recyclage en laboratoire.<br>
+        Tu dois obtenir au moins {{ ceil((quiz?.questions?.length ?? 5) / 2) }} bonnes réponses pour débloquer le fragment.
+      </p>
+      <button class="primary-btn" (click)="startGame()">Commencer</button>
+    </div>
+  </div>
+
+  <!-- Overlay de victoire -->
+  <div *ngIf="gameOver && won" class="quiz-overlay success-overlay">
+    <div class="overlay-card">
+      <h3>🎉 Quiz réussi !</h3>
+      <p>Tu as obtenu <strong>{{ score }}</strong> bonnes réponses sur {{ quiz?.questions?.length }}.</p>
+      <p>Le fragment de code est débloqué.</p>
+    </div>
+  </div>
+
+  <!-- Overlay de défaite -->
+  <div *ngIf="gameOver && !won" class="quiz-overlay defeat-overlay">
+    <div class="overlay-card">
+      <h3>💔 Quiz raté !</h3>
+      <p *ngIf="defeatReason === 'timeout'">Le temps est écoulé !</p>
+      <p *ngIf="defeatReason === 'score'">Score insuffisant : <strong>{{ score }}</strong> / {{ quiz?.questions?.length }}.</p>
+      <p>La session est fermée.</p>
+    </div>
+  </div>
+
+  <!-- Chargement -->
+  <div *ngIf="!quiz && !error" class="quiz-loading">
+    <p>Chargement du quiz...</p>
+  </div>
+</div>

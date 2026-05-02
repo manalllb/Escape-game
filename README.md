@@ -1,275 +1,391 @@
-<h1>Intitalisation projet premiere fois :</h1>
+# Escape Game — La Formule Parfaite
 
-<ul>
-    <li>docker --version</li>
-    <li>docker compose version</li>
-</ul>
+> **Projet académique** : Jeu d'évasion pédagogique sous forme de mini-jeux en ligne.
+> Le joueur doit compléter 3 défis (Tri Express, Séquence, Quiz) pour débloquer les fragments d'un code secret, puis valider la formule finale dans le coffre-fort du laboratoire.
 
-<p>si pas de docker :</p>
-<pre>
+---
+
+## Table des matières
+
+1. [Technologies utilisées](#technologies-utilisées)
+2. [Prérequis](#prérequis)
+3. [Installation & Lancement](#installation--lancement)
+   - [Commandes Docker](#commandes-docker)
+   - [Base de données](#base-de-données)
+   - [Données de test (Fixtures)](#données-de-test-fixtures)
+4. [Architecture du projet](#architecture-du-projet)
+5. [Guide de jeu](#guide-de-jeu)
+   - [1. Connexion Administrateur](#1-connexion-administrateur)
+   - [2. Créer une session](#2-créer-une-session)
+   - [3. Rejoindre la session (Joueur)](#3-rejoindre-la-session-joueur)
+   - [4. Lancer la mission](#4-lancer-la-mission)
+   - [5. Mini-jeu 1 : Tri Express](#5-mini-jeu-1--tri-express)
+   - [6. Mini-jeu 2 : Séquence](#6-mini-jeu-2--séquence)
+   - [7. Mini-jeu 3 : Quiz Écologique](#7-mini-jeu-3--quiz-écologique)
+   - [8. Phase finale : Le Coffre-fort](#8-phase-finale--le-coffre-fort)
+   - [9. Victoire ou Défaite](#9-victoire-ou-défaite)
+6. [API Backend — Points d'entrée](#api-backend--points-dentrée)
+7. [Design et Maquettes](#design-et-maquettes)
+8. [Commandes utiles au quotidien](#commandes-utiles-au-quotidien)
+9. [Dépannage](#dépannage)
+
+---
+
+## Technologies utilisées
+
+| Couche | Technologie | Version |
+|--------|-------------|---------|
+| **Backend** | Symfony (PHP) | 8.0.x |
+| **Frontend** | Angular | ^21.2.0 |
+| **Base de données** | PostgreSQL | 16 |
+| **Conteneurisation** | Docker & Docker Compose | - |
+| **Bundler** | Vite (développement Angular CLI) | - |
+
+---
+
+## Prérequis
+
+Avant de commencer, assurez-vous d'avoir installé :
+
+- **Docker** (`docker --version`)
+- **Docker Compose** (`docker compose version`)
+
+Si Docker n'est pas installé (Ubuntu/Debian) :
+
+```bash
 sudo apt update
-sudo apt install -y docker.io docker-compose-plugin 
+sudo apt install -y docker.io docker-compose-plugin
 sudo usermod -aG docker $USER
 newgrp docker
-</pre>
+```
 
-<p>creation du projet :</p>
-<pre>
-mkdir escape-game && cd escape-game
-mkdir api front
-</pre>
+> **Note macOS** : Si vous utilisez Docker Desktop, les commandes `docker` et `docker compose` sont disponibles nativement après installation.
 
-<p>creation du docker-compose et du dockerfile:</p>
-<p>
-working_dir: /app | volumes: - ./api:/app | ports: 5173 pour le front / 8000 pour le back
-</p>
+---
 
-<p>configuration base de données (.env) :</p>
-<pre>
-DATABASE_URL="postgresql://escape:escape@db:5432/escape?serverVersion=16&charset=utf8"
-</pre>
+## Installation & Lancement
 
-<p>creer Symfony (dans le container)</p>
-<pre>
-docker run --rm -it -v "$PWD/api:/app" -w /app composer:2 \
-create-project symfony/skeleton .
-</pre>
+### 1. Cloner ou initialiser le projet
 
-<p>creer React :</p>
-<pre>
-cd front
-npm create vite@latest . -- --template react
-npm install
-cd ..
-</pre>
+Le projet est déjà structuré avec deux dossiers principaux :
 
-<p>start docker:</p>
-<pre>
+```
+escape-game/
+├── api/          # Backend Symfony
+├── front/        # Frontend Angular
+├── docker-compose.yml
+└── Dockerfile
+```
+
+### 2. Commandes Docker
+
+Lancer l'ensemble de l'application (base de données, API, frontend) :
+
+```bash
+# Depuis la racine du projet
 docker compose up -d
-</pre>
+```
 
-<p>creer la base :</p>
-<pre>
-docker compose exec api php bin/console doctrine:database:create
-</pre>
+Vérifier que tous les services sont démarrés :
 
-<p>faire les migrations :</p>
-<pre>
-docker compose exec api php bin/console doctrine:migrations:migrate
-</pre>
-
-<p>travailler dans le conteneur :</p>
-<pre>
-docker compose exec api bash
-</pre>
-
-<hr>
-
-<h1>Commandes utiles au quotidien</h1>
-
-<p>Lancer / arrêter :</p>
-<pre>
-docker compose up -d
-docker compose down
-</pre>
-
-<p>Voir ce qui tourne :</p>
-<pre>
+```bash
 docker compose ps
-docker compose logs -f api
-</pre>
+```
 
-<p>Exécuter Symfony :</p>
-<pre>
-docker compose exec api php bin/console
-</pre>
+Arrêter les services :
 
-<p>Entrer dans le conteneur :</p>
-<pre>
-docker compose exec api bash
-</pre>
-
-<p>start le server :</p>
-<pre>
-symfony server:start --no-tls --listen-ip=0.0.0.0 --d
-</pre>
-
-<p>a chaque modif des entités :</p>
-<pre>
-symfony console make:migration
-symfony console doctrine:migrations:migrate
-</pre>
-
-<hr>
-
-<h3>étape de la creation du projet :</h3>
-
-<pre>
-symfony console make:entity AdminJeu
-symfony console make:entity Joueur
-symfony console make:entity SessionJeu
-</pre>
-
-<p>
-relations :
-SessionJeu -> ManyToOne AdminJeu
-SessionJeu -> ManyToOne Joueur (nullable au début)
-</p>
-
-<p>ajout du multi joueur ( amelioration c'etait pas present dans le mldr principale) :</p>
-<pre>
-symfony console make:entity SessionJoueur
-</pre>
-
-<p>
-SessionJoueur permet de lier :
-- une session
-- un joueur
-avec score, progression, etc.
-</p>
-
-<pre>
-symfony console make:controller Api/SessionController
-</pre>
-
-<p>fonctions principales :</p>
-<ul>
-    <li>createSession</li>
-    <li>joinSession</li>
-    <li>state</li>
-</ul>
-
-<hr>
-
-<h3>logique backend</h3>
-
-<p>createSession :</p>
-<ul>
-    <li>verifie admin (email + password)</li>
-    <li>genere un code PIN</li>
-    <li>genere un code secret</li>
-    <li>cree la session</li>
-</ul>
-
-<p>joinSession :</p>
-<ul>
-    <li>le joueur rejoint avec PIN + pseudo</li>
-    <li>creation d’un SessionJoueur</li>
-    <li>initialisation des SuiviProg (mini jeux)</li>
-    <li>initialisation des InventaireCode (fragments)</li>
-</ul>
-
-<p>state :</p>
-<ul>
-    <li>retourne la session</li>
-    <li>retourne tous les joueurs</li>
-    <li>retourne leur progression</li>
-</ul>
-
-<hr>
-
-<h3>dans le front</h3>
-
-<p>dans front/src :</p>
-
-<pre>
-api.js :
-- apiGet
-- apiPost
-</pre>
-
-<p>composants principaux :</p>
-<ul>
-    <li>JoinSession</li>
-    <li>GameFlow</li>
-    <li>AdminDashboard</li>
-</ul>
-
-<p>le front utilise :</p>
-<pre>
-GET /api/sessions/{id}/state
-</pre>
-
-<hr>
-
-<h3>CORS</h3>
-
-<pre>
-docker run --rm -it -v "$PWD/api:/app" -w /app composer:2 require nelmio/cors-bundle
-</pre>
-
-<p>modifier nelmio_cors.yaml :</p>
-<pre>
-allow_origin: ['http://localhost:5173']
-</pre>
-
-<pre>
-docker compose restart api
-</pre>
-
-<hr>
-
-<h3>CREATION DES MINIS JEUX</h3>
-
-<pre>
-symfony console make:entity MiniJeu
-symfony console make:entity ContQuiz
-symfony console make:entity ContSeq
-symfony console make:entity ContTri
-symfony console make:entity SuiviProg
-symfony console make:entity InventaireCode
-symfony console make:entity CodeJeu
-</pre>
-
-<p>types :</p>
-<ul>
-    <li>tri</li>
-    <li>sequence</li>
-    <li>quiz</li>
-</ul>
-
-<p>logique :</p>
-<ul>
-    <li>chaque mini jeu donne un score</li>
-    <li>si réussi -> debloque un fragment</li>
-    <li>les fragments forment le code final</li>
-</ul>
-
-<hr>
-
-<h3>IMPORTANT</h3>
-
-<h3>reset base</h3>
-
-<pre>
+```bash
 docker compose down
-docker compose up -d db
-docker compose exec db psql -U escape -d postgres
-</pre>
+```
 
-<pre>
-DROP DATABASE IF EXISTS escape;
-CREATE DATABASE escape OWNER escape;
-</pre>
+### 3. Base de données
 
-<p>puis :</p>
+La première fois, vous devez créer la base de données et exécuter les migrations :
 
-<pre>
+```bash
+# Créer la base de données
+docker compose exec api php bin/console doctrine:database:create
+
+# Exécuter les migrations (création des tables)
+docker compose exec api php bin/console doctrine:migrations:migrate
+```
+
+> Si vous modifiez les entités Symfony, regénérez une migration :
+> ```bash
+> docker compose exec api php bin/console make:migration
+> docker compose exec api php bin/console doctrine:migrations:migrate
+> ```
+
+### 4. Données de test (Fixtures)
+
+Le jeu a besoin de données initiales (administrateur, mini-jeux, contenus, codes secrets). Chargez les fixtures :
+
+```bash
+docker compose exec api php bin/console doctrine:fixtures:load
+```
+
+> Confirmez avec `yes` si la console demande de purger la base de données.
+
+Cette commande crée automatiquement :
+- Un administrateur par défaut (`admin@escape.game` / `admin123`)
+- Les 3 mini-jeux avec leurs contenus (Tri, Séquence, Quiz)
+- Les codes secrets du coffre-fort
+
+---
+
+## Architecture du projet
+
+### Backend (`api/`)
+
+Le backend Symfony suit une architecture en couches :
+
+```
+src/
+├── Controller/Api/        # Contrôleurs REST (Session, Admin, Login, MiniJeu)
+├── Entity/                # Entités Doctrine (AdminJeu, Joueur, SessionJeu,
+│                          #   SuiviProg, MiniJeu, ContTri, ContSeq, ContQuiz,
+│                          #   CodeJeu, InventaireCode)
+├── DataFixtures/          # Jeu de données initial (AppFixtures.php)
+├── Repository/            # Requêtes personnalisées Doctrine
+└── config/                # Configuration (routes, CORS, services)
+```
+
+**Points d'entrée principaux de l'API :**
+
+| Endpoint | Méthode | Description |
+|----------|---------|-------------|
+| `/api/login` | POST | Authentification admin |
+| `/api/sessions` | POST | Création d'une session |
+| `/api/sessions/{codePin}/join` | POST | Rejoindre une session |
+| `/api/sessions/{id}/state` | GET | État complet de la session |
+| `/api/sessions/{id}/complete` | POST | Terminer un mini-jeu |
+| `/api/sessions/{id}/validate` | POST | Valider le code final |
+| `/api/admin/sessions` | GET | Liste des sessions (dashboard) |
+| `/api/minijeux/{id}/contenu` | GET | Contenu d'un mini-jeu |
+
+### Frontend (`front/`)
+
+Application Angular en mode **standalone components** :
+
+```
+src/app/
+├── components/            # 12 composants (pages + mini-jeux)
+│   ├── welcome-page/      # Page d'accueil
+│   ├── admin-login/       # Connexion admin
+│   ├── admin-dashboard/   # Tableau de bord
+│   ├── join-session/      # Rejoindre une session
+│   ├── game-intro/        # Introduction narrative
+│   ├── game-flow/         # Orchestrateur du flux de jeu
+│   ├── tri-game/          # Mini-jeu 1 : Arcade (chute d'objets)
+│   ├── sequence-game/     # Mini-jeu 2 : Séquence logique
+│   ├── quiz-game/         # Mini-jeu 3 : Quiz écologique
+│   ├── safe-game/         # Phase finale : Coffre-fort
+│   ├── victory-page/      # Écran de victoire
+│   └── defeat-page/       # Écran de défaite
+├── services/              # Services métier (API, Session, Auth, GameState)
+├── guards/                # Guards de routage (AuthGuard)
+├── app.routes.ts          # Définition des routes
+└── app.config.ts          # Configuration globale
+```
+
+**Flux de navigation :**
+
+```
+/  →  /login  →  /dashboard  →  création session
+                        ↓
+/join/{codePin}  →  /intro  →  /game  →  Mini-jeux  →  /safe  →  /victory
+```
+
+---
+
+## Guide de jeu
+
+### 1. Connexion Administrateur
+
+Rendez-vous sur le frontend : **http://localhost:5173**
+
+Cliquez sur **"Espace Administrateur"** en haut à droite.
+
+![Page de acceil](design-intefaces/welcome.png)
+![Page de connexion admin](design-intefaces/login.png)
+
+
+Identifiants par défaut (créés par les fixtures) :
+- **Email** : `admin@gmail.com`
+- **Mot de passe** : `admin`
+---
+
+### 2. Créer une session
+
+Une fois connecté, le dashboard affiche la liste des sessions.
+
+![Dashboard administrateur](design-intefaces/dashboard.jpg)
+
+Cliquez sur le bouton **"Créer une session"**.
+Le système génère automatiquement :
+- Un **code PIN** à 6 chiffres (ex: `847291`) que le joueur devra saisir
+- Un **code secret** de 12 caractères divisé en **3 fragments**
+- Les 3 mini-jeux activés avec leur suivi de progression
+
+> Le code PIN est affiché à l'écran. Communiquez-le au joueur.
+
+---
+
+### 3. Rejoindre la session (Joueur)
+
+Le joueur retourne sur la page d'accueil et clique sur **"Rejoindre une session"**.
+
+![Rejoindre une session](design-intefaces/rejoindre-session.jpg)
+
+1. Saisissez le **code PIN** à 6 chiffres fourni par l'admin
+2. Choisissez un **pseudo**
+3. Cliquez sur **"Entrer dans le laboratoire"**
+
+---
+
+### 4. Lancer la mission
+
+Après avoir rejoint la session, une page d'introduction narrative présente le contexte :
+
+> *"Vous êtes un scientifique en herbe dans le laboratoire de la Cosmétologie..."*
+
+![Introduction](design-intefaces/img904.jpg)
+
+Cliquez sur **"Lancer la mission"** pour accéder au flux de jeu.
+
+---
+
+### 5. Mini-jeu 1 : Tri Express
+
+**Type** : Jeu d'arcade (chute d'objets)
+
+![Mini-jeu Tri Express](design-intefaces/jeux-1.jpg)
+
+**Objectif** : Attraper 15 produits cosmétiques avec le panier.
+
+**Règles :**
+- Déplacez le **panier** en bas de l'écran avec la **souris** (ou le doigt sur mobile)
+- Les **produits cosmétiques** (✨) donnent +1 point
+- Les **non-cosmétiques** (💊) font perdre 1 vie
+- Vous disposez de **3 vies**
+- La partie s'arrête si vous attrapez 15 cosmétiques (victoire) ou perdez vos 3 vies (défaite)
+- Un **fragment du code secret** est débloqué à la fin
+
+---
+
+### 6. Mini-jeu 2 : Séquence
+
+**Type** : Réflexion / Logique
+
+![Mini-jeu Séquence](design-intefaces/jeux-2.jpg)
+
+**Objectif** : Retrouver la bonne séquence de 4 couleurs en 8 essais maximum.
+
+**Règles :**
+- Composez une séquence de 4 couleurs parmi 6 possibles
+- Le système indique pour chaque proposition :
+  - Combien de couleurs sont **bien placées** (pion noir)
+  - Combien de couleurs sont **présentes mais mal placées** (pion blanc)
+- Retrouvez la combinaison secrète en moins de 8 essais
+- Un **fragment du code secret** est débloqué à la fin
+
+---
+
+### 7. Mini-jeu 3 : Quiz Écologique
+
+**Type** : QCM Culture scientifique
+
+![Mini-jeu Quiz](design-intefaces/jeux-3.jpg)
+
+**Objectif** : Répondre correctement aux questions sur la cosmétologie durable.
+
+**Règles :**
+- 5 questions à choix multiples (QCM)
+- Sélectionnez la bonne réponse parmi 4 propositions
+- Chaque bonne réponse rapporte des points
+- Un **fragment du code secret** est débloqué à la fin
+
+---
+
+### 8. Phase finale : Le Coffre-fort
+
+Une fois les 3 mini-jeux terminés, les 3 fragments du code secret sont assemblés.
+
+![Coffre-fort](design-intefaces/img948.jpg)
+
+**Objectif** : Saisir le **code final de 12 caractères** pour déverrouiller la Formule Parfaite.
+
+- Les fragments collectés sont affichés
+- Composez le code dans le champ de saisie
+- Cliquez sur **"Déverrouiller"**
+
+> Le backend valide le code. S'il est correct, la mission est un succès !
+
+---
+
+### 9. Victoire ou Défaite
+
+**Victoire** (code correct) :
+
+![Page de victoire](design-intefaces/img969.jpg)
+
+- Félicitations ! La **Formule Parfaite** est déverrouillée.
+- Un récapitulatif s'affiche :
+  - **Score final**
+  - **Temps total** de la mission
+  - **Code PIN** de la session
+  - **Exploits accomplis** (badges des mini-jeux réussis)
+- Cliquez sur **"Retour à l'Accueil"** pour recommencer
+
+**Défaite** (code incorrect) :
+
+- La mission a échoué.
+- Vous pouvez retourner à l'accueil et réessayer.
+
+
+
+---
+
+## Commandes utiles au quotidien
+
+### Docker Compose
+
+```bash
+# Démarrer tous les services
 docker compose up -d
-symfony console doctrine:migrations:migrate
-</pre>
 
-<hr>
+# Arrêper tous les services
+docker compose down
 
-<h3>sauvegarde base dans escape_clean.sql</h3>
+# Voir les logs en temps réel
+docker compose logs -f api
+docker compose logs -f front
 
-<pre>
-docker compose exec -T db pg_dump -U escape -d escape > backups/escape_clean.sql
-</pre>
+# Voir les conteneurs actifs
+docker compose ps
+```
 
-<h3> RESTAURATION DE BASE A CHAQUE PULL </h3>
-<p>restauration :</p>
+### Symfony (backend)
 
-<pre>
-docker compose exec -T db psql -U escape -d escape < backups/escape_clean.sql
-</pre>
+```bash
+# Entrer dans le conteneur API
+docker compose exec api bash
+
+# Puis exécuter les commandes Symfony :
+php bin/console doctrine:database:create      # Créer la BDD
+php bin/console doctrine:migrations:migrate    # Migrer
+php bin/console doctrine:fixtures:load         # Charger les fixtures
+php bin/console cache:clear                    # Vider le cache
+```
+
+### Angular (frontend)
+
+Le frontend est servi automatiquement par Docker sur le port **5173**.
+
+```bash
+# Si vous voulez lancer le frontend hors Docker :
+cd front
+npm install
+npx ng serve --port 5173
+```
+

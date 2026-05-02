@@ -1,0 +1,126 @@
+/* ===== Page de connexion administrateur ===== */
+
+.login-wrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: calc(100vh - 120px);
+  padding: 24px 16px;
+}
+
+.login-card {
+  width: min(460px, 100%);
+  padding: 40px 36px 36px;
+  text-align: center;
+}
+
+.login-title {
+  margin: 0 0 8px;
+  font-family: 'Fredoka', sans-serif;
+  font-size: 1.9rem;
+  font-weight: 700;
+  color: #7e22ce;
+}
+
+.login-subtitle {
+  margin: 0 0 28px;
+  font-size: 0.95rem;
+  color: #6b7280;
+  line-height: 1.5;
+}
+
+.login-form {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  text-align: left;
+}
+
+.field-group label {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: #374151;
+}
+
+.input-with-icon {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: 1px solid #e5e7eb;
+  background: #f9fafb;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.input-with-icon:focus-within {
+  border-color: #9333ea;
+  box-shadow: 0 0 0 3px rgba(147, 51, 234, 0.10);
+}
+
+.input-with-icon input {
+  flex: 1;
+  border: none;
+  background: transparent;
+  outline: none;
+  font-size: 0.95rem;
+  color: #1f2937;
+}
+
+.input-with-icon input::placeholder {
+  color: #9ca3af;
+}
+
+.input-icon {
+  display: grid;
+  place-items: center;
+  color: #9ca3af;
+  flex-shrink: 0;
+}
+
+.input-icon svg {
+  width: 18px;
+  height: 18px;
+}
+
+.login-extras {
+  text-align: right;
+}
+
+.forgot-link {
+  font-size: 0.85rem;
+  color: #7e22ce;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.forgot-link:hover {
+  text-decoration: underline;
+}
+
+.login-submit-btn {
+  width: 100%;
+  padding: 14px;
+  border: none;
+  border-radius: 12px;
+  font-size: 1rem;
+  font-weight: 700;
+  color: #ffffff;
+  background: #7e22ce;
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.15s ease, opacity 0.15s ease;
+}
+
+.login-submit-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 8px 20px rgba(126, 34, 206, 0.30);
+}
+
+.login-submit-btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}

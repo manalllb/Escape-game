@@ -1,0 +1,23 @@
+<!-- Section: Carte centrale de défaite (style glassmorphism) -->
+<section class="glass-card center-card" style="text-align: center;">
+  <!-- Icône d'avertissement -->
+  <div style="font-size: 60px;">⚠️</div>
+  <!-- Message d'échec -->
+  <p style="margin-top: 10px; opacity: 0.72;">Mission échouée</p>
+  <!-- Titre principal -->
+  <h2 style="font-size: 2.2rem; margin-bottom: 10px;">Le coffre reste verrouillé</h2>
+  <!-- Description de l'échec -->
+  <p style="line-height: 1.7;">
+    Le code final saisi n'était pas correct. La session peut être relancée pour retenter la mission.
+  </p>
+
+  <!-- Section: Information de débogage (code attendu pour les tests) -->
+  <div class="info-box" style="margin-top: 18px;">
+    Code attendu pour les tests de ce front : <strong>{{ result?.finalCode ?? 'FORM1223RECY' }}</strong>
+  </div>
+
+  <!-- Bouton: Réessayer depuis l'accueil -->
+  <button class="primary-btn" style="width: 100%; margin-top: 22px;" (click)="restart()">
+    Réessayer depuis l'accueil
+  </button>
+</section>

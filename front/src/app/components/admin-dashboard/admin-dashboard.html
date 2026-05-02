@@ -1,0 +1,139 @@
+<div class="dashboard-wrap">
+
+  <!-- Section Panneau d'Administration -->
+  <div class="dashboard-section">
+    <div class="section-header">
+      <h2>Panneau d'Administration</h2>
+      <span style="opacity: 0.72; font-size: 14px;">{{ adminEmail }}</span>
+    </div>
+    <div class="section-body">
+      <div class="manage-row">
+        <div>
+          <h3>Gestion des Sessions</h3>
+          <p>Créez une nouvelle session pour votre escape game</p>
+        </div>
+        <button class="create-btn" (click)="createSession()" [disabled]="createLoading">
+          <span class="btn-icon">+</span>
+          {{ createLoading ? 'Création…' : 'Créer Session' }}
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Section Sessions -->
+  <div class="dashboard-section">
+    <div class="section-header">
+      <h2>Sessions ({{ sessions.length }})</h2>
+    </div>
+    <div class="section-body">
+      <div *ngIf="loading">Chargement des sessions...</div>
+      <div *ngIf="!loading && error" class="error-box">{{ error }}</div>
+
+      <!-- Aucune session -->
+      <div *ngIf="!loading && sessions.length === 0" class="empty-state">
+        Aucune session. Créez-en une pour commencer.
+      </div>
+
+      <!-- Liste des sessions -->
+      <div *ngIf="!loading && sessions.length > 0" class="layout-stack">
+        <div
+          *ngFor="let s of sessions"
+          class="session-card"
+          [class.selected]="selectedSessionId === s.id"
+          (click)="selectSession(s.id)"
+          style="cursor: pointer;"
+        >
+          <div class="session-info">
+            <div class="session-pin-row">
+              <span class="pin-label">Code PIN:</span>
+              <span class="pin-value">{{ s.codePin }}</span>
+            </div>
+            <div class="session-meta">
+              Créée le {{ s.dateCreation | date:'dd/MM/yyyy à HH:mm' }}
+            </div>
+            <div class="session-badges">
+              <span class="badge-status" [ngClass]="statusClass(s)">{{ statusLabel(s) }}</span>
+              <span *ngIf="s.joueur" class="badge-players">🎮 {{ s.joueur.pseudo }}</span>
+              <span *ngIf="!s.joueur" class="badge-players">⏳ En attente de joueur</span>
+            </div>
+          </div>
+
+          <div class="session-actions">
+            <button class="action-btn" (click)="copyPin(s.codePin); $event.stopPropagation()">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 16px; height: 16px;">
+                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+              </svg>
+              Copier
+            </button>
+            <button class="action-btn danger" (click)="deleteSession(s.id, $event)" title="Supprimer">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 16px; height: 16px;">
+                <polyline points="3 6 5 6 21 6"></polyline>
+                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+              </svg>
+              Supprimer
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Section Détails de la session sélectionnée -->
+  <div *ngIf="selectedSession" class="dashboard-section">
+    <div class="section-header">
+      <h2>Détails de la session {{ selectedSession.codePin }}</h2>
+    </div>
+    <div class="section-body">
+      <p class="progress-text">
+        Joueur : <strong>{{ selectedSession.joueur?.pseudo || 'Aucun' }}</strong> ·
+        Score : {{ selectedSession.score }} ·
+        Temps restant : {{ selectedSession.tempsRestant > 0 ? (selectedSession.tempsRestant + 's') : 'Terminée' }}
+      </p>
+
+      <div class="progress-bar-wrap">
+        <div class="progress">
+          <span [style.width.%]="getProgress()"></span>
+        </div>
+        <p class="progress-caption">
+          {{ getDoneCount() }} / {{ getOrderedSuivis().length }} mini-jeux terminés
+        </p>
+      </div>
+
+      <div class="layout-stack" style="margin-top: 18px;">
+        <div *ngFor="let suivi of getOrderedSuivis()" class="mini-card">
+          <div class="mini-header">
+            <div>
+              <p class="mini-order">Jeu {{ suivi.ordre }}</p>
+              <h4 class="mini-name">{{ suivi.nom }}</h4>
+              <p class="mini-meta">Type : {{ suivi.type }} · Durée max : {{ suivi.dureeMax ?? '—' }}</p>
+            </div>
+            <div [ngClass]="'status-chip ' + (suivi.termine ? 'done' : 'pending')">
+              {{ suivi.termine ? 'Terminé' : 'Non commencé' }}
+            </div>
+          </div>
+
+          <div class="stat-grid" style="margin-top: 14px;">
+            <div class="stat-card">
+              <small>Score</small>
+              <strong>{{ suivi.score }}</strong>
+            </div>
+            <div class="stat-card">
+              <small>Temps</small>
+              <strong>{{ suivi.temps }}s</strong>
+            </div>
+            <div class="stat-card">
+              <small>Cosmétiques triés</small>
+              <strong>{{ suivi.nbCosmetiqueAtt ?? 0 }}</strong>
+            </div>
+            <div class="stat-card">
+              <small>Non-cosmétiques triés</small>
+              <strong>{{ suivi.nbNonCosmetiqueAtt ?? 0 }}</strong>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>

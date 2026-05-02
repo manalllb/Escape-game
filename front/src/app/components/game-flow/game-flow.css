@@ -1,0 +1,185 @@
+/* =============================
+   Game Flow — Styles d'orchestration
+   ============================= */
+
+/* Layout compact quand un mini-jeu est actif */
+.game-active-layout {
+  display: flex;
+  flex-direction: column;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+}
+
+/* Header compact in-game */
+.game-compact-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 20px;
+  background: linear-gradient(90deg, #a855f7 0%, #7e22ce 100%);
+  color: #fff;
+  font-weight: 700;
+  font-size: 0.9rem;
+  z-index: 5;
+  flex-shrink: 0;
+}
+
+.mission-label {
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  font-size: 0.8rem;
+  opacity: 0.9;
+}
+
+.mission-count {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Overlay de déblocage de fragment */
+.fragment-unlock-overlay {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  background: rgba(15, 10, 30, 0.92);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  animation: fadeIn 0.5s ease;
+}
+
+.fragment-unlock-card {
+  text-align: center;
+  padding: 48px;
+  max-width: 480px;
+  width: 90%;
+  animation: slideUp 0.6s ease;
+}
+
+.unlock-icon {
+  font-size: 4rem;
+  line-height: 1;
+  margin-bottom: 16px;
+  animation: bounceIn 0.8s ease;
+}
+
+.fragment-unlock-card h2 {
+  font-family: 'Fredoka', sans-serif;
+  font-size: 2rem;
+  color: #fff;
+  margin: 0 0 8px;
+}
+
+.unlock-subtitle {
+  color: rgba(255, 255, 255, 0.72);
+  font-size: 1rem;
+  margin: 0 0 32px;
+}
+
+.fragment-reveal-box {
+  background: rgba(255, 255, 255, 0.08);
+  border: 2px solid rgba(168, 85, 247, 0.5);
+  border-radius: 20px;
+  padding: 28px 36px;
+  margin-bottom: 32px;
+  position: relative;
+  overflow: hidden;
+}
+
+.fragment-reveal-box::before {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  border-radius: 20px;
+  background: linear-gradient(90deg, #a855f7, #ec4899, #a855f7);
+  background-size: 200% 100%;
+  animation: shimmer 2s infinite linear;
+  opacity: 0.6;
+  z-index: -1;
+}
+
+.fragment-reveal-label {
+  display: block;
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.6);
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  margin-bottom: 12px;
+}
+
+.fragment-reveal-code {
+  font-family: 'Courier New', monospace;
+  font-size: 2.4rem;
+  font-weight: 700;
+  color: #fff;
+  letter-spacing: 8px;
+  text-shadow: 0 0 20px rgba(168, 85, 247, 0.5);
+  animation: revealPulse 1.5s ease infinite;
+}
+
+.fragment-unlock-card .primary-btn {
+  min-width: 200px;
+  padding: 14px 28px;
+  font-size: 1rem;
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes bounceIn {
+  0% {
+    opacity: 0;
+    transform: scale(0.3);
+  }
+  50% {
+    transform: scale(1.1);
+  }
+  70% {
+    transform: scale(0.95);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+@keyframes revealPulse {
+  0%,
+  100% {
+    transform: scale(1);
+    text-shadow: 0 0 20px rgba(168, 85, 247, 0.5);
+  }
+  50% {
+    transform: scale(1.05);
+    text-shadow: 0 0 40px rgba(168, 85, 247, 0.8);
+  }
+}

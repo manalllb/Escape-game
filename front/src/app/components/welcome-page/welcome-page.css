@@ -1,0 +1,130 @@
+/* ===== Page d'accueil — correspond à la maquette design-intefaces/main-inteface.jpg ===== */
+
+.welcome-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: calc(100vh - 120px);
+  padding: 32px 16px;
+}
+
+/* Titre centré */
+.welcome-header {
+  text-align: center;
+  margin-bottom: 40px;
+}
+
+.welcome-title {
+  margin: 0 0 10px;
+  font-family: 'Fredoka', sans-serif;
+  font-size: 2.6rem;
+  font-weight: 700;
+  color: #7e22ce;
+  line-height: 1.2;
+}
+
+.welcome-subtitle {
+  margin: 0;
+  font-size: 1.1rem;
+  color: #6b7280;
+  line-height: 1.5;
+}
+
+/* Grille des 2 cartes */
+.cards-row {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 28px;
+  width: min(860px, 100%);
+}
+
+/* Carte individuelle */
+.role-card {
+  background: #ffffff;
+  border-radius: 24px;
+  padding: 40px 32px 32px;
+  text-align: center;
+  box-shadow: 0 10px 40px rgba(126, 34, 206, 0.10);
+  border: 1px solid rgba(126, 34, 206, 0.06);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.role-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 16px 50px rgba(126, 34, 206, 0.14);
+}
+
+/* Cercle icône lavande */
+.role-icon {
+  width: 90px;
+  height: 90px;
+  margin: 0 auto 22px;
+  border-radius: 50%;
+  background: #f3e8ff;
+  display: grid;
+  place-items: center;
+  color: #9333ea;
+}
+
+.role-icon svg {
+  width: 40px;
+  height: 40px;
+}
+
+/* Titre de la carte */
+.role-title {
+  margin: 0 0 10px;
+  font-family: 'Fredoka', sans-serif;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #7e22ce;
+}
+
+/* Description */
+.role-desc {
+  margin: 0 0 28px;
+  font-size: 0.98rem;
+  color: #6b7280;
+  line-height: 1.5;
+}
+
+/* Bouton violet pleine largeur */
+.role-btn {
+  display: block;
+  width: 100%;
+  padding: 14px 18px;
+  border: none;
+  border-radius: 14px;
+  font-size: 1rem;
+  font-weight: 700;
+  color: #ffffff;
+  background: linear-gradient(90deg, #a21caf 0%, #7e22ce 100%);
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.15s ease, opacity 0.15s ease;
+}
+
+.role-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 24px rgba(147, 51, 234, 0.30);
+}
+
+.role-btn:active {
+  transform: translateY(0);
+}
+
+/* Responsive : 1 colonne sur mobile */
+@media (max-width: 720px) {
+  .welcome-title {
+    font-size: 2rem;
+  }
+
+  .cards-row {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+
+  .role-card {
+    padding: 32px 24px 24px;
+  }
+}

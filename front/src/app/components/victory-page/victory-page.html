@@ -1,0 +1,69 @@
+<div class="victory-page">
+  <!-- Particules scintillantes en arrière-plan -->
+  <div class="victory-sparkles">
+    <span *ngFor="let _ of [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15]" class="sparkle"></span>
+  </div>
+
+  <div class="victory-card">
+    <!-- Bannière dorée -->
+    <div class="victory-banner">
+      <div class="victory-trophy">🏆</div>
+      <h1 class="victory-title">MISSION RÉUSSIE !</h1>
+      <p class="victory-subtitle">Félicitations, le lancement est un succès ! 🎉</p>
+    </div>
+
+    <!-- Diamant + Formule -->
+    <div class="victory-formule">
+      <div class="victory-diamond">💎</div>
+      <p class="victory-formule-text">La Formule Parfaite a été déverrouillée !</p>
+    </div>
+
+    <!-- Récapitulatif -->
+    <div class="victory-recap">
+      <h3 class="victory-recap-title">Récapitulatif de la Mission</h3>
+      <div class="victory-stats">
+        <div class="victory-stat stat-score">
+          <div class="victory-stat-icon">⭐</div>
+          <div class="victory-stat-label">Score Final</div>
+          <div class="victory-stat-value">{{ session?.score ?? 0 }}</div>
+          <div class="victory-stat-unit">points</div>
+        </div>
+        <div class="victory-stat stat-time">
+          <div class="victory-stat-icon">🕐</div>
+          <div class="victory-stat-label">Temps Total</div>
+          <div class="victory-stat-value">{{ formatTime(totalTime) }}</div>
+          <div class="victory-stat-unit">minutes</div>
+        </div>
+        <div class="victory-stat stat-session">
+          <div class="victory-stat-icon">📋</div>
+          <div class="victory-stat-label">Session</div>
+          <div class="victory-stat-value">{{ session?.codePin ?? '—' }}</div>
+          <div class="victory-stat-unit">code PIN</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Exploits -->
+    <div class="victory-achievements" *ngIf="achievements.length > 0">
+      <div class="victory-achievements-header">
+        <span class="victory-achievements-icon">🏆</span>
+        <span class="victory-achievements-title">Exploits Accomplis</span>
+      </div>
+      <div class="victory-achievements-list">
+        <div
+          *ngFor="let a of achievements"
+          class="victory-badge"
+          [style.border-color]="a.color"
+        >
+          <span class="victory-badge-icon">{{ a.icon }}</span>
+          <span class="victory-badge-label">{{ a.label }}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bouton retour -->
+    <button class="victory-btn" (click)="restart()">
+      Retour à l'Accueil
+    </button>
+  </div>
+</div>

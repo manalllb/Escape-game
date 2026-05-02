@@ -7,79 +7,132 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Attribute\Route;
 
+/**
+ * Contrôleur pour la gestion des mini-jeux.
+ * Permet de lister les mini-jeux disponibles et de récupérer leur contenu.
+ *
+ * Toutes les routes sont préfixées par /api et nommées avec api_
+ */
 #[Route('/api', name: 'api_')]
 final class MiniJeuController extends AbstractController
 {
+    /**
+     * Récupère la liste de tous les mini-jeux actifs.
+     *
+     * Route : GET /api/minijeux
+     *
+     * Les mini-jeux sont triés par ordre croissant (ordre de passage dans la session).
+     * Seuls les mini-jeux avec le statut actif=true sont retournés.
+     *
+     * @param MiniJeuRepository $repo Le repository pour les mini-jeux
+     * @return JsonResponse La réponse JSON contenant un tableau de mini-jeux :
+     *   Chaque mini-jeu contient :
+     *   - id : L'identifiant du mini-jeu
+     *   - nom : Le nom affiché
+     *   - type : Le type (quiz, tri, sequence)
+     *   - ordre : L'ordre de passage
+     *   - dureeMax : La durée maximale en secondes
+     */
     #[Route('/minijeux', name: 'minijeux_list', methods: ['GET'])]
     public function listMiniJeux(MiniJeuRepository $repo): JsonResponse
-{
-    $miniJeux = $repo->findBy(['actif' => true], ['ordre' => 'ASC']);
+    {
+        // Récupération de tous les mini-jeux actifs, triés par ordre
+        $miniJeux = $repo->findBy(['actif' => true], ['ordre' => 'ASC']);
 
-    return $this->json(array_map(fn($m) => [
-        'id' => $m->getId(),
-        'nom' => $m->getNom(),
-        'type' => $m->getType(),
-        'ordre' => $m->getOrdre(),
-        'dureeMax' => $m->getDureeMax(),
-    ], $miniJeux));
-}
-
-#[Route('/minijeux/{id}/contenu', name: 'minijeu_contenu', methods: ['GET'])]
-public function contenuMiniJeu(int $id, MiniJeuRepository $repo): JsonResponse
-{
-    $miniJeu = $repo->find($id);
-
-    if (!$miniJeu) {
-        return $this->json(['error' => 'MiniJeu not found'], 404);
+        // Transformation des entités en tableau JSON sérialisable
+        return $this->json(array_map(fn($m) => [
+            'id' => $m->getId(),
+            'nom' => $m->getNom(),
+            'type' => $m->getType(),
+            'ordre' => $m->getOrdre(),
+            'dureeMax' => $m->getDureeMax(),
+        ], $miniJeux));
     }
 
-    if ($miniJeu->getType() === 'quiz') {
-        $questions = array_map(fn($q) => [
-            'id' => $q->getId(),
-            'question' => $q->getQuestion(),
-            'bonneReponse' => $q->getBonneReponse(),
-            'mauvaisesReponses' => $q->getMauvaisesReponses(),
-        ], $miniJeu->getContQuizzes()->toArray());
+    /**
+     * Récupère le contenu détaillé d'un mini-jeu spécifique.
+     *
+     * Route : GET /api/minijeux/{id}/contenu
+     *
+     * Le contenu retourné dépend du type du mini-jeu :
+     * - quiz : tableau de questions avec bonnes et mauvaises réponses
+     * - tri : tableau d'items avec leur statut cosmétique
+     * - sequence : tableau d'étapes avec libellé, ordre et zone d'application
+     *
+     * @param int $id L'identifiant du mini-jeu
+     * @param MiniJeuRepository $repo Le repository pour les mini-jeux
+     * @return JsonResponse La réponse JSON contenant :
+     *   Pour un quiz :
+     *   - id, nom, type, questions (id, question, bonneReponse, mauvaisesReponses)
+     *   Pour un tri :
+     *   - id, nom, type, items (id, nomProduit, estCosmetique)
+     *   Pour une séquence :
+     *   - id, nom, type, etapes (id, libelle, ordreAttendu, zoneApp)
+     *   Statut HTTP 404 si le mini-jeu n'existe pas
+     *   Statut HTTP 400 si le type n'est pas géré
+     */
+    #[Route('/minijeux/{id}/contenu', name: 'minijeu_contenu', methods: ['GET'])]
+    public function contenuMiniJeu(int $id, MiniJeuRepository $repo): JsonResponse
+    {
+        // Recherche du mini-jeu par son ID
+        $miniJeu = $repo->find($id);
 
-        return $this->json([
-            'id' => $miniJeu->getId(),
-            'nom' => $miniJeu->getNom(),
-            'type' => $miniJeu->getType(),
-            'questions' => $questions,
-        ]);
+        if (!$miniJeu) {
+            return $this->json(['error' => 'MiniJeu not found'], 404);
+        }
+
+        // Récupération du contenu selon le type du mini-jeu
+        if ($miniJeu->getType() === 'quiz') {
+            // Pour un quiz, on retourne toutes les questions
+            $questions = array_map(fn($q) => [
+                'id' => $q->getId(),
+                'question' => $q->getQuestion(),
+                'bonneReponse' => $q->getBonneReponse(),
+                'mauvaisesReponses' => $q->getMauvaisesReponses(),
+            ], $miniJeu->getContQuizzes()->toArray());
+
+            return $this->json([
+                'id' => $miniJeu->getId(),
+                'nom' => $miniJeu->getNom(),
+                'type' => $miniJeu->getType(),
+                'questions' => $questions,
+            ]);
+        }
+
+        // Pour un tri, on retourne tous les items à trier
+        if ($miniJeu->getType() === 'tri') {
+            $items = array_map(fn($t) => [
+                'id' => $t->getId(),
+                'nomProduit' => $t->getNomProduit(),
+                'estCosmetique' => $t->isEstCosmetique(),
+            ], $miniJeu->getContTris()->toArray());
+
+            return $this->json([
+                'id' => $miniJeu->getId(),
+                'nom' => $miniJeu->getNom(),
+                'type' => $miniJeu->getType(),
+                'items' => $items,
+            ]);
+        }
+
+        // Pour une séquence, on retourne toutes les étapes
+        if ($miniJeu->getType() === 'sequence') {
+            $etapes = array_map(fn($s) => [
+                'id' => $s->getId(),
+                'libelle' => $s->getLibelle(),
+                'ordreAttendu' => $s->getOrdreAttendu(),
+                'zoneApp' => $s->getZoneApp(),
+            ], $miniJeu->getContSeqs()->toArray());
+
+            return $this->json([
+                'id' => $miniJeu->getId(),
+                'nom' => $miniJeu->getNom(),
+                'type' => $miniJeu->getType(),
+                'etapes' => $etapes,
+            ]);
+        }
+
+        // Erreur si le type du mini-jeu n'est pas reconnu
+        return $this->json(['error' => 'Type de mini-jeu non géré'], 400);
     }
-
-    if ($miniJeu->getType() === 'tri') {
-        $items = array_map(fn($t) => [
-            'id' => $t->getId(),
-            'nomProduit' => $t->getNomProduit(),
-            'estCosmetique' => $t->isEstCosmetique(),
-        ], $miniJeu->getContTris()->toArray());
-
-        return $this->json([
-            'id' => $miniJeu->getId(),
-            'nom' => $miniJeu->getNom(),
-            'type' => $miniJeu->getType(),
-            'items' => $items,
-        ]);
-    }
-
-    if ($miniJeu->getType() === 'sequence') {
-        $etapes = array_map(fn($s) => [
-            'id' => $s->getId(),
-            'libelle' => $s->getLibelle(),
-            'ordreAttendu' => $s->getOrdreAttendu(),
-            'zoneApp' => $s->getZoneApp(),
-        ], $miniJeu->getContSeqs()->toArray());
-
-        return $this->json([
-            'id' => $miniJeu->getId(),
-            'nom' => $miniJeu->getNom(),
-            'type' => $miniJeu->getType(),
-            'etapes' => $etapes,
-        ]);
-    }
-
-    return $this->json(['error' => 'Type de mini-jeu non géré'], 400);
-}
 }

@@ -1,0 +1,49 @@
+<div class="safe-container">
+  <div class="safe-header">
+    <div class="safe-lock-icon">🔐</div>
+    <h2 class="safe-title">Coffre-fort du Laboratoire</h2>
+    <p class="safe-subtitle">
+      Assemble les fragments et saisis le code secret pour déverrouiller la Formule Parfaite
+    </p>
+  </div>
+
+  <div class="safe-fragments-row">
+    <div *ngFor="let fragment of fragments; let i = index" class="safe-fragment-box">
+      <span class="safe-fragment-num">Fragment {{ i + 1 }}</span>
+      <span class="safe-fragment-code">{{ fragment }}</span>
+    </div>
+  </div>
+
+  <div class="safe-code-section">
+    <label class="safe-code-label">Code Final</label>
+    <div class="safe-input-wrap">
+      <input
+        class="safe-code-input"
+        [(ngModel)]="value"
+        (input)="value = value.toUpperCase()"
+        placeholder="ENTRE LE CODE..."
+        maxlength="20"
+      />
+      <button
+        class="safe-validate-btn"
+        (click)="validate()"
+        [disabled]="!value || saving"
+      >
+        {{ saving ? 'Vérification...' : 'Déverrouiller' }}
+      </button>
+    </div>
+    <div
+      *ngIf="message"
+      [class.safe-message-success]="message.includes('correct') || message.includes('déverrouillé')"
+      [class.safe-message-error]="!message.includes('correct') && !message.includes('déverrouillé')"
+      class="safe-message"
+    >
+      {{ message }}
+    </div>
+  </div>
+
+  <div class="safe-score-row">
+    <span class="safe-score-label">Score actuel :</span>
+    <span class="safe-score-value">{{ score }} pts</span>
+  </div>
+</div>

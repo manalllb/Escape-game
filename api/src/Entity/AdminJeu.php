@@ -21,6 +21,9 @@ class AdminJeu
     #[ORM\Column(length: 255)]
     private ?string $password = null;
 
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $apiToken = null;
+
     /**
      * @var Collection<int, SessionJeu>
      */
@@ -61,9 +64,17 @@ class AdminJeu
         return $this;
     }
 
-    /**
-     * @return Collection<int, SessionJeu>
-     */
+    public function getApiToken(): ?string
+    {
+        return $this->apiToken;
+    }
+
+    public function setApiToken(?string $apiToken): static
+    {
+        $this->apiToken = $apiToken;
+        return $this;
+    }
+
     public function getSessionJeus(): Collection
     {
         return $this->sessionJeus;

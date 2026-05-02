@@ -1,0 +1,53 @@
+<!-- Section: Conteneur principal de la page d'accueil -->
+<div class="welcome-wrap">
+  <!-- Section: En-tête de bienvenue -->
+  <div class="welcome-header">
+    <!-- Titre principal -->
+    <h1 class="welcome-title">Bienvenue sur Mission We Lab</h1>
+    <!-- Sous-titre descriptif -->
+    <p class="welcome-subtitle">
+      Un escape game éducatif passionnant avec 3 jeux à découvrir !
+    </p>
+  </div>
+
+  <!-- Section: Grille des cartes de rôle -->
+  <div class="cards-row">
+    <!-- Section: Carte Joueur -->
+    <div class="role-card">
+      <!-- Icône de joueur (personnages) -->
+      <div class="role-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+          <circle cx="9" cy="7" r="4"></circle>
+          <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+          <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+        </svg>
+      </div>
+      <!-- Titre et description -->
+      <h2 class="role-title">Je suis Joueur</h2>
+      <p class="role-desc">Rejoins une session de jeu avec ton code PIN</p>
+      <!-- Bouton d'action -->
+      <button class="role-btn" (click)="goPlayer()">Commencer à Jouer</button>
+    </div>
+
+    <!-- Section: Carte Administrateur -->
+    <div class="role-card">
+      <!-- Icône d'administrateur (personne avec étoile) -->
+      <div class="role-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+          <circle cx="12" cy="7" r="4"></circle>
+          <path d="M17.5 8.5l1.5-1.5 1.5 1.5"></path>
+          <path d="M19 7l1.5 1.5"></path>
+          <path d="M19 7l-1.5 1.5"></path>
+          <circle cx="19" cy="7" r="3" stroke-width="1.5"></circle>
+        </svg>
+      </div>
+      <!-- Titre et description -->
+      <h2 class="role-title">Je suis Administrateur</h2>
+      <p class="role-desc">Gère les sessions et crée des codes PIN</p>
+      <!-- Bouton d'action -->
+      <button class="role-btn" (click)="goAdmin()">Accès Admin</button>
+    </div>
+  </div>
+</div>
