@@ -56,7 +56,7 @@ class AppFixtures extends Fixture
 
         // ContTri
         $tris = [
-            ['Dentifrice', true],
+            ['Dentifrice', false],
             ['Complément alimentaire', false],
             ['Shampoing purifiant', true],
             ['Rouge à lèvres mat', true],
