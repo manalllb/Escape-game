@@ -16,10 +16,6 @@ function shuffle<T>(array: T[]): T[] {
 
 const LETTERS = ['A', 'B', 'C', 'D'];
 
-/**
- * Mini-jeu 3 : L'Énigme Écologique.
- * Quiz à choix multiples. Seuil de victoire = ceil(5/2) = 3 bonnes réponses.
- */
 @Component({
   selector: 'app-quiz-game',
   standalone: true,
@@ -47,14 +43,13 @@ export class QuizGame implements OnInit, OnDestroy {
   won = false;
   defeatReason: 'score' | 'timeout' = 'score';
 
-  // exposé au template
   ceil = Math.ceil;
 
   showingFeedback = false;
   lastAnswerCorrect: boolean | null = null;
 
   elapsed = 0;
-  timeLimit = 180; // 3 minutes
+  timeLimit = 180;
   remainingTime = 180;
 
   private timerId: ReturnType<typeof setInterval> | null = null;
@@ -76,7 +71,6 @@ export class QuizGame implements OnInit, OnDestroy {
     }
   }
 
-  /** Charge les questions du quiz. */
   loadQuiz() {
     this.error = '';
     this.miniJeuService.getContenu(this.miniJeuId).subscribe({
@@ -97,7 +91,6 @@ export class QuizGame implements OnInit, OnDestroy {
     });
   }
 
-  /** Démarre la partie. */
   startGame() {
     this.gameActive = true;
     this.gameOver = false;
@@ -117,7 +110,6 @@ export class QuizGame implements OnInit, OnDestroy {
     }, 1000);
   }
 
-  /** Prépare la question actuelle et mélange ses choix une seule fois. */
   private setCurrentQuestion() {
     const q = this.quiz?.questions?.[this.index] ?? null;
     this.currentQuestion = q;
@@ -131,7 +123,6 @@ export class QuizGame implements OnInit, OnDestroy {
     }
   }
 
-  /** Gère la réponse du joueur avec feedback visuel. */
   handleAnswer(choice: string) {
     if (!this.currentQuestion || !this.gameActive || this.showingFeedback || this.saving) return;
 
@@ -158,7 +149,6 @@ export class QuizGame implements OnInit, OnDestroy {
     }, 1200);
   }
 
-  /** Termine la partie. */
   private endGame(won: boolean, reason?: 'score' | 'timeout') {
     this.gameActive = false;
     this.gameOver = true;
@@ -175,7 +165,6 @@ export class QuizGame implements OnInit, OnDestroy {
     }, won ? 2500 : 800);
   }
 
-  /** Soumet le résultat au backend. */
   private submitResult() {
     if (this.saving) return;
     this.saving = true;
@@ -199,7 +188,6 @@ export class QuizGame implements OnInit, OnDestroy {
       });
   }
 
-  /** Ferme la session en cas de défaite. */
   private submitFailure(_reason: 'score' | 'timeout') {
     if (this.saving) return;
     this.saving = true;
@@ -220,19 +208,16 @@ export class QuizGame implements OnInit, OnDestroy {
     }
   }
 
-  /** Formate un temps en mm:ss. */
   formatTime(totalSeconds: number): string {
     const m = Math.floor(totalSeconds / 60).toString().padStart(2, '0');
     const s = (totalSeconds % 60).toString().padStart(2, '0');
     return `${m}:${s}`;
   }
 
-  /** Lettres A/B/C/D. */
   getLetter(i: number): string {
     return LETTERS[i] ?? '?';
   }
 
-  /** Nombre de questions restantes. */
   getRemaining(): number {
     return (this.quiz?.questions?.length ?? 0) - this.index - (this.showingFeedback ? 1 : 0);
   }

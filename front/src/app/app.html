@@ -1,9 +1,8 @@
-<!-- Structure principale de l'application -->
+
 <div class="page-shell">
 
-  <!-- Section: En-tête (topbar) avec logo et bouton de navigation -->
   <header class="topbar">
-    <!-- Section: Identité de la marque (logo + titre) -->
+
     <div class="brand">
       <div class="brand-badge">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
@@ -15,7 +14,6 @@
       <h1 class="brand-title">Mission We Lab</h1>
     </div>
 
-    <!-- Section: Bouton de navigation (Retour ou Déconnexion) -->
     <button
       *ngIf="currentUrl !== '/'"
       class="back-btn"
@@ -24,9 +22,8 @@
     </button>
   </header>
 
-  <!-- Section: Contenu principal de la page active -->
   <main>
-    <!-- RouterOutlet: Point d'insertion du composant de la route active -->
+
     <router-outlet></router-outlet>
   </main>
 </div>

@@ -3,23 +3,22 @@
 </div>
 
 <ng-container *ngIf="!error">
-  <!-- Overlay de déblocage de fragment (après victoire) -->
+
   <div *ngIf="showingFragmentUnlock && session" class="fragment-unlock-overlay">
     <div class="fragment-unlock-card">
       <div class="unlock-icon">🎉</div>
-      <h2>Félicitations !</h2>
-      <p class="unlock-subtitle">Tu as débloqué un fragment du code secret</p>
+      <h2>Fragment récupéré</h2>
+      <p class="unlock-subtitle">Un morceau du code vient d’être ajouté à ton inventaire.</p>
       <div class="fragment-reveal-box">
         <span class="fragment-reveal-label">Fragment {{ getDoneCount() }}</span>
         <div class="fragment-reveal-code">{{ getLastUnlockedFragment() }}</div>
       </div>
       <button class="primary-btn" (click)="continueToNextGame()">
-        Passer au jeu suivant →
+        Continuer
       </button>
     </div>
   </div>
 
-  <!-- Layout compact quand un mini-jeu est actif -->
   <div *ngIf="getProchain() && !showingFragmentUnlock; else fullLayoutTpl" class="game-active-layout">
     <div class="game-compact-header">
       <span class="mission-label">Mission en cours</span>
@@ -28,10 +27,9 @@
     <ng-container *ngTemplateOutlet="miniGameTpl"></ng-container>
   </div>
 
-  <!-- Layout complet (pas de jeu actif ou après déblocage) -->
   <ng-template #fullLayoutTpl>
     <div *ngIf="session; else loadingTpl" style="width: min(980px, 100%); margin: 0 auto;" class="layout-stack">
-      <!-- En-tête de progression -->
+
       <section class="glass-card" style="padding: 26px;">
         <div style="display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap;">
           <div>
@@ -51,7 +49,6 @@
         </div>
       </section>
 
-      <!-- Fragments du code -->
       <section class="glass-card" style="padding: 24px;">
         <h3 style="margin-top: 0;">Fragments du code</h3>
         <div class="fragment-row">
@@ -62,7 +59,6 @@
         </div>
       </section>
 
-      <!-- Phase finale (coffre-fort) si tous les mini-jeux sont terminés -->
       <ng-container *ngIf="!getProchain(); else miniGameTpl">
         <app-safe-game
           [fragments]="getFragments()"
@@ -72,7 +68,6 @@
         ></app-safe-game>
       </ng-container>
 
-      <!-- Mini-jeu actif (fallback si on est ici) -->
       <ng-container *ngTemplateOutlet="miniGameTpl"></ng-container>
     </div>
 
@@ -83,7 +78,6 @@
     </ng-template>
   </ng-template>
 
-  <!-- Template partagé pour les mini-jeux -->
   <ng-template #miniGameTpl>
     <ng-container *ngIf="getProchain() as prochain">
       <ng-container *ngIf="prochain.type === 'tri'">

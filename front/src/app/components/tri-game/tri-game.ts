@@ -20,11 +20,6 @@ interface FallingItem {
   speed: number;
 }
 
-/**
- * Mini-jeu 1 : Tri Express.
- * Jeu d'arcade de chute d'objets. Le joueur déplace un panier pour
- * attraper les produits cosmétiques et éviter les non-cosmétiques.
- */
 @Component({
   selector: 'app-tri-game',
   standalone: true,
@@ -48,7 +43,7 @@ export class TriGame implements OnInit, OnDestroy {
   lives = 3;
   target = 15;
   elapsed = 0;
-  timeLimit = 180; // 3 minutes max
+  timeLimit = 180;
   remainingTime = 180;
 
   gameActive = false;
@@ -62,7 +57,6 @@ export class TriGame implements OnInit, OnDestroy {
   playfieldWidth = 0;
   playfieldHeight = 450;
 
-  // Dimensions fixes en pixels
   readonly basketWidth = 80;
   readonly basketHeight = 70;
   readonly itemWidth = 90;
@@ -86,7 +80,6 @@ export class TriGame implements OnInit, OnDestroy {
     this.stopGame();
   }
 
-  /** Charge le contenu du mini-jeu depuis le backend. */
   loadGame() {
     this.error = '';
     this.miniJeuService.getContenu(this.miniJeuId).subscribe({
@@ -100,14 +93,12 @@ export class TriGame implements OnInit, OnDestroy {
     });
   }
 
-  /** Démarre la partie. */
   startGame() {
     if (!this.playfieldRef) return;
     const el = this.playfieldRef.nativeElement;
     this.playfieldWidth = el.offsetWidth;
     this.playfieldHeight = el.offsetHeight;
 
-    // Centre le panier
     this.basketX = (this.playfieldWidth - this.basketWidth) / 2;
 
     this.gameActive = true;
@@ -133,16 +124,14 @@ export class TriGame implements OnInit, OnDestroy {
     }, 1000);
   }
 
-  /** Réinitialise et relance une partie après une défaite. */
   restartGame() {
     this.gameOver = false;
     this.won = false;
     this.startGame();
   }
 
-  /** Programme le prochain spawn avec un délai variable. */
   private scheduleNextSpawn() {
-    const delay = 700 + Math.random() * 500; // 700–1200 ms
+    const delay = 700 + Math.random() * 500;
     this.spawnTimerId = setTimeout(() => {
       if (this.gameActive) {
         this.spawnItem();
@@ -151,7 +140,6 @@ export class TriGame implements OnInit, OnDestroy {
     }, delay);
   }
 
-  /** Crée un nouvel objet en haut de la zone de jeu. */
   private spawnItem() {
     if (!this.items.length || !this.gameActive) return;
     const item = this.items[Math.floor(Math.random() * this.items.length)];
@@ -162,11 +150,10 @@ export class TriGame implements OnInit, OnDestroy {
       item,
       x,
       y: -this.itemHeight,
-      speed: 1.5 + Math.random() * 1.5, // 1.5–3 px/frame (base ralentie)
+      speed: 1.5 + Math.random() * 1.5,
     });
   }
 
-  /** Boucle de jeu principale (requestAnimationFrame). */
   private gameLoop() {
     if (!this.gameActive) return;
 
@@ -207,7 +194,6 @@ export class TriGame implements OnInit, OnDestroy {
     this.animFrameId = requestAnimationFrame(() => this.gameLoop());
   }
 
-  /** Gère l'attrapage d'un objet (cosmétique ou non). */
   private catchItem(item: TriItem) {
     if (item.estCosmetique) {
       this.score++;
@@ -216,7 +202,6 @@ export class TriGame implements OnInit, OnDestroy {
     }
   }
 
-  /** Déplace le panier en suivant la souris. */
   onMouseMove(event: MouseEvent) {
     if (!this.playfieldRef || !this.gameActive) return;
     const rect = this.playfieldRef.nativeElement.getBoundingClientRect();
@@ -225,7 +210,6 @@ export class TriGame implements OnInit, OnDestroy {
     this.basketX = x;
   }
 
-  /** Déplace le panier au toucher (mobile). */
   onTouchMove(event: TouchEvent) {
     if (!this.playfieldRef || !this.gameActive) return;
     event.preventDefault();
@@ -236,7 +220,6 @@ export class TriGame implements OnInit, OnDestroy {
     this.basketX = x;
   }
 
-  /** Termine la partie et soumet le score au backend. */
   private endGame(won: boolean, reason?: 'lives' | 'timeout') {
     this.gameActive = false;
     this.gameOver = true;
@@ -253,7 +236,6 @@ export class TriGame implements OnInit, OnDestroy {
     }, won ? 2500 : 800);
   }
 
-  /** Soumet le résultat au backend via completeMiniJeu(). */
   private submitResult() {
     if (this.saving) return;
     this.saving = true;
@@ -281,7 +263,6 @@ export class TriGame implements OnInit, OnDestroy {
       });
   }
 
-  /** Appelé en cas de défaite : ferme la session et émet defeat. */
   private submitFailure(_reason: 'lives' | 'timeout') {
     if (this.saving) return;
     this.saving = true;
@@ -291,7 +272,6 @@ export class TriGame implements OnInit, OnDestroy {
         this.defeat.emit();
       },
       error: () => {
-        // Même si l'appel échoue, on redirige vers la défaite
         this.defeat.emit();
       },
     });
@@ -317,7 +297,6 @@ export class TriGame implements OnInit, OnDestroy {
     }
   }
 
-  /** Formatte un temps en secondes en mm:ss. */
   formatTime(totalSeconds: number): string {
     const m = Math.floor(totalSeconds / 60)
       .toString()
@@ -326,7 +305,6 @@ export class TriGame implements OnInit, OnDestroy {
     return `${m}:${s}`;
   }
 
-  /** TrackBy pour optimiser le ngFor des objets en chute. */
   trackById(_index: number, item: FallingItem): number {
     return item.id;
   }

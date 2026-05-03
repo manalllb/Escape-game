@@ -1,6 +1,4 @@
-/* =============================
-   Page de Victoire — design-intefaces/img969.jpg
-   ============================= */
+
 
 .victory-page {
   min-height: calc(100vh - 80px);
@@ -13,7 +11,6 @@
   background: linear-gradient(135deg, #9c27b0 0%, #e91e63 40%, #ff9800 100%);
 }
 
-/* Particules scintillantes */
 .victory-sparkles {
   position: absolute;
   inset: 0;
@@ -51,7 +48,6 @@
   50% { transform: translateY(-18px) scale(1.2); opacity: 0.85; }
 }
 
-/* Carte principale */
 .victory-card {
   position: relative;
   z-index: 1;
@@ -62,7 +58,6 @@
   box-shadow: 0 24px 80px rgba(0, 0, 0, 0.25);
 }
 
-/* Bannière dorée */
 .victory-banner {
   background: linear-gradient(90deg, #ffc107 0%, #ff9800 100%);
   padding: 36px 24px 28px;
@@ -92,7 +87,6 @@
   color: #fff;
 }
 
-/* Section Diamant / Formule */
 .victory-formule {
   padding: 24px;
   text-align: center;
@@ -113,7 +107,6 @@
   color: #7e22ce;
 }
 
-/* Récapitulatif */
 .victory-recap {
   padding: 20px 24px 16px;
 }
@@ -183,7 +176,6 @@
   opacity: 0.7;
 }
 
-/* Exploits accomplis */
 .victory-achievements {
   margin: 0 24px 20px;
   border-radius: 16px;
@@ -237,7 +229,6 @@
   font-size: 1rem;
 }
 
-/* Bouton retour */
 .victory-btn {
   display: block;
   width: calc(100% - 48px);
@@ -260,7 +251,6 @@
   box-shadow: 0 12px 32px rgba(147, 51, 234, 0.4);
 }
 
-/* Responsive */
 @media (max-width: 560px) {
   .victory-stats {
     grid-template-columns: 1fr;

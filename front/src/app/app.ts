@@ -5,10 +5,6 @@ import { filter } from 'rxjs/operators';
 import { GameStateService } from './services/game-state.service';
 import { AuthService } from './services/auth.service';
 
-/**
- * Composant racine de l'application.
- * Affiche la barre d'en-tête commune et le contenu de la page active via le routeur.
- */
 @Component({
   selector: 'app-root',
   imports: [CommonModule, RouterOutlet],
@@ -16,7 +12,6 @@ import { AuthService } from './services/auth.service';
   styleUrl: './app.css'
 })
 export class App {
-  // Signal réactif pour le sous-titre affiché dans l'en-tête
   headerSubtitle = signal('Escape game cosmétique');
 
   constructor(
@@ -24,7 +19,6 @@ export class App {
     private gameState: GameStateService,
     private authService: AuthService
   ) {
-    // Met à jour le sous-titre à chaque changement de route
     this.router.events
       .pipe(filter((event) => event instanceof NavigationEnd))
       .subscribe((event: NavigationEnd) => {
@@ -32,12 +26,10 @@ export class App {
       });
   }
 
-  /** Retourne à la page d'accueil. */
   goHome() {
     this.router.navigate(['/']);
   }
 
-  /** Déconnecte l'utilisateur (backend + local) et retourne à l'accueil. */
   logout() {
     this.authService.logout().subscribe({
       next: () => {
@@ -45,24 +37,20 @@ export class App {
         this.router.navigate(['/']);
       },
       error: () => {
-        // En cas d'erreur réseau, on nettoie quand même localement
         this.gameState.reset();
         this.router.navigate(['/']);
       }
     });
   }
 
-  /** Expose l'URL courante pour le template. */
   get currentUrl(): string {
     return this.router.url;
   }
 
-  /** Label du bouton header selon la route. */
   get headerBtnLabel(): string {
     return this.router.url.includes('admin-dashboard') ? 'Déconnexion' : 'Retour';
   }
 
-  /** Action du bouton header selon la route. */
   handleHeaderAction() {
     if (this.router.url.includes('admin-dashboard')) {
       this.logout();
@@ -71,10 +59,6 @@ export class App {
     }
   }
 
-  /**
-   * Met à jour le sous-titre selon la route active.
-   * Cela permet d'afficher un texte descriptif dans l'en-tête.
-   */
   private updateSubtitle(url: string) {
     if (url.includes('admin-login')) {
       this.headerSubtitle.set('Connexion administrateur');

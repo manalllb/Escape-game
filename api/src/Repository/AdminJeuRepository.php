@@ -6,23 +6,9 @@ use App\Entity\AdminJeu;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
-/**
- * Repository pour l'entité AdminJeu.
- *
- * Fournit des méthodes de recherche personnalisées pour les administrateurs.
- * Étend ServiceEntityRepository qui fournit les méthodes CRUD de base :
- * - find(), findAll(), findBy(), findOneBy()
- * - save(), remove()
- *
- * @extends ServiceEntityRepository<AdminJeu>
- */
+
 class AdminJeuRepository extends ServiceEntityRepository
 {
-    /**
-     * Constructeur du repository.
-     *
-     * @param ManagerRegistry $registry Le registre de gestionnaire Doctrine injecté par le conteneur
-     */
     public function __construct(ManagerRegistry $registry)
     {
         parent::__construct($registry, AdminJeu::class);

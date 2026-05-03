@@ -4,10 +4,6 @@ import { FormsModule } from '@angular/forms';
 import { SessionService } from '../../services/session.service';
 import { GameStateService } from '../../services/game-state.service';
 
-/**
- * Phase finale : Coffre-fort du laboratoire.
- * Le joueur doit assembler les fragments et saisir le code final.
- */
 @Component({
   selector: 'app-safe-game',
   imports: [CommonModule, FormsModule],
@@ -15,11 +11,9 @@ import { GameStateService } from '../../services/game-state.service';
   styleUrl: './safe-game.css'
 })
 export class SafeGame {
-  // Fragments de code débloqués reçus depuis le parent
   @Input() fragments: string[] = [];
   @Input() score = 0;
 
-  // Événements émis selon le résultat
   @Output() victory = new EventEmitter<void>();
   @Output() defeat = new EventEmitter<void>();
 
@@ -35,7 +29,6 @@ export class SafeGame {
     this.sessionId = this.gameState.getSessionId();
   }
 
-  /** Valide le code final auprès du backend. */
   validate() {
     if (!this.sessionId) return;
     this.saving = true;

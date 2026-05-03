@@ -1,7 +1,7 @@
 <div *ngIf="error" class="error-box">{{ error }}</div>
 
 <div class="quiz-game-container" *ngIf="quiz || !error">
-  <!-- Header -->
+
   <header class="quiz-header">
     <div class="quiz-header-center">
       <span class="quiz-header-icon">
@@ -18,7 +18,6 @@
     </div>
   </header>
 
-  <!-- Barre de progression -->
   <div class="quiz-progress-row">
     <span class="quiz-progress-label">Question {{ index + 1 }}/{{ quiz?.questions?.length ?? 0 }}</span>
     <div class="quiz-progress-track">
@@ -27,19 +26,16 @@
     <span class="quiz-progress-score">{{ score }} bonne(s) réponse(s)</span>
   </div>
 
-  <!-- Zone de jeu -->
   <div class="quiz-playfield">
     <div class="quiz-card" *ngIf="currentQuestion">
-      <!-- En-tête de la carte -->
+
       <div class="quiz-card-header">
         <span class="quiz-badge">Question {{ index + 1 }}</span>
         <span class="quiz-remaining">{{ getRemaining() }} restante(s)</span>
       </div>
 
-      <!-- Question -->
       <h3 class="quiz-question">{{ currentQuestion.question }}</h3>
 
-      <!-- Réponses -->
       <div class="quiz-answers">
         <button
           *ngFor="let choice of currentChoices; let i = index"
@@ -54,7 +50,6 @@
     </div>
   </div>
 
-  <!-- Overlay de feedback (correct / incorrect) -->
   <div *ngIf="showingFeedback" class="quiz-feedback-overlay">
     <div class="quiz-feedback-card" [class.correct]="lastAnswerCorrect" [class.wrong]="!lastAnswerCorrect">
       <div class="quiz-feedback-icon">{{ lastAnswerCorrect ? '✅' : '❌' }}</div>
@@ -67,7 +62,6 @@
     </div>
   </div>
 
-  <!-- Overlay de démarrage -->
   <div *ngIf="!gameActive && !gameOver && quiz" class="quiz-overlay start-overlay">
     <div class="overlay-card">
       <h3>Prêt à jouer ?</h3>
@@ -79,7 +73,6 @@
     </div>
   </div>
 
-  <!-- Overlay de victoire -->
   <div *ngIf="gameOver && won" class="quiz-overlay success-overlay">
     <div class="overlay-card">
       <h3>🎉 Quiz réussi !</h3>
@@ -88,7 +81,6 @@
     </div>
   </div>
 
-  <!-- Overlay de défaite -->
   <div *ngIf="gameOver && !won" class="quiz-overlay defeat-overlay">
     <div class="overlay-card">
       <h3>💔 Quiz raté !</h3>
@@ -98,7 +90,6 @@
     </div>
   </div>
 
-  <!-- Chargement -->
   <div *ngIf="!quiz && !error" class="quiz-loading">
     <p>Chargement du quiz...</p>
   </div>

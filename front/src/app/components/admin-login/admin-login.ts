@@ -5,10 +5,6 @@ import { Router } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
 import { GameStateService } from '../../services/game-state.service';
 
-/**
- * Page de connexion administrateur.
- * Authentifie l'admin via l'API puis redirige vers le dashboard.
- */
 @Component({
   selector: 'app-admin-login',
   imports: [CommonModule, FormsModule],
@@ -26,11 +22,9 @@ export class AdminLogin {
     private gameState: GameStateService,
     private router: Router
   ) {
-    // Pré-remplit l'email si l'admin est déjà connecté
     this.adminEmail = this.gameState.getAdminEmail();
   }
 
-  /** Transforme l'erreur backend en message lisible pour l'admin. */
   private formatLoginError(err: Error & { status?: number }): string {
     switch (err.status) {
       case 401:
@@ -42,7 +36,6 @@ export class AdminLogin {
     }
   }
 
-  /** Authentifie l'admin via l'API. */
   handleSubmit() {
     this.error = '';
     this.loading = true;

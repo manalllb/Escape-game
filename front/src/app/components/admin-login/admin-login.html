@@ -1,19 +1,17 @@
-<!-- Section: Conteneur principal de la page de connexion -->
+
 <div class="login-wrap">
-  <!-- Section: Carte de connexion (style glassmorphism) -->
+
   <div class="login-card glass-card">
-    <!-- En-tête: Titre et sous-titre -->
+
     <h2 class="login-title">Administrateur</h2>
     <p class="login-subtitle">
-      Connectez-vous pour accéder au panneau d'administration
+      Connexion à l’espace de gestion
     </p>
 
-    <!-- Section: Message d'erreur (affiché conditionnellement) -->
     <div *ngIf="error" class="error-box">{{ error }}</div>
 
-    <!-- Section: Formulaire de connexion -->
     <div class="login-form">
-      <!-- Champ: Adresse e-mail -->
+
       <div class="field-group">
         <label>Adresse e-mail</label>
         <div class="input-with-icon">
@@ -31,7 +29,6 @@
         </div>
       </div>
 
-      <!-- Champ: Mot de passe -->
       <div class="field-group">
         <label>Mot de passe</label>
         <div class="input-with-icon">
@@ -49,17 +46,15 @@
         </div>
       </div>
 
-      <!-- Section: Lien mot de passe oublié -->
       <div class="login-extras">
         <a href="#" class="forgot-link">Mot de passe oublié ?</a>
       </div>
 
-      <!-- Bouton: Soumission du formulaire -->
       <button
         class="login-submit-btn"
         (click)="handleSubmit()"
         [disabled]="!adminEmail || !adminPassword || loading">
-        {{ loading ? 'Connexion...' : 'Se connecter' }}
+        {{ loading ? 'Connexion…' : 'Se connecter' }}
       </button>
     </div>
   </div>

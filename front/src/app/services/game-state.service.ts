@@ -1,16 +1,11 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject } from 'rxjs';
 
-/**
- * Service qui centralise l'état global de l'application.
- * Utilise des BehaviorSubjects pour que les composants puissent s'abonner
- * aux changements de valeurs.
- */
 @Injectable({
   providedIn: 'root'
 })
 export class GameStateService {
-  /** Clés de stockage local. */
+
   private readonly K = {
     sessionId: 'mwl_sessionId',
     sessionPin: 'mwl_sessionPin',
@@ -19,30 +14,20 @@ export class GameStateService {
     token: 'mwl_token',
   } as const;
 
-  // Identifiant de la session en cours
   private sessionId$ = new BehaviorSubject<number | null>(this.loadNumber(this.K.sessionId));
-  // Code PIN à partager pour rejoindre
   private sessionPin$ = new BehaviorSubject<string>(localStorage.getItem(this.K.sessionPin) ?? '');
-  // Pseudo du joueur connecté
   private pseudo$ = new BehaviorSubject<string>(localStorage.getItem(this.K.pseudo) ?? '');
-  // Email de l'admin connecté
   private adminEmail$ = new BehaviorSubject<string>(localStorage.getItem(this.K.adminEmail) ?? '');
-  // Token d'authentification admin
   private token$ = new BehaviorSubject<string>(localStorage.getItem(this.K.token) ?? '');
-  // Message d'erreur global
   private error$ = new BehaviorSubject<string>('');
-  // Indicateur de chargement
   private loading$ = new BehaviorSubject<boolean>(false);
-  // Résultat final (victoire / défaite)
   private gameResult$ = new BehaviorSubject<unknown>(null);
 
-  /** Recharge un nombre depuis le localStorage. */
   private loadNumber(key: string): number | null {
     const raw = localStorage.getItem(key);
     return raw ? Number(raw) : null;
   }
 
-  // Observables publics pour que les composants puissent s'y abonner
   readonly sessionId = this.sessionId$.asObservable();
   readonly sessionPin = this.sessionPin$.asObservable();
   readonly pseudo = this.pseudo$.asObservable();
@@ -52,7 +37,6 @@ export class GameStateService {
   readonly loading = this.loading$.asObservable();
   readonly gameResult = this.gameResult$.asObservable();
 
-  // Valeurs actuelles (lecture directe sans abonnement)
   getSessionId(): number | null {
     return this.sessionId$.value;
   }
@@ -85,7 +69,6 @@ export class GameStateService {
     return this.gameResult$.value;
   }
 
-  /** Stocke une valeur dans localStorage. */
   private store(key: string, value: string | null) {
     if (value === null) {
       localStorage.removeItem(key);
@@ -94,7 +77,6 @@ export class GameStateService {
     }
   }
 
-  // Setters pour modifier l'état
   setSessionId(id: number | null) {
     this.store(this.K.sessionId, id !== null ? String(id) : null);
     this.sessionId$.next(id);
@@ -132,7 +114,6 @@ export class GameStateService {
     this.gameResult$.next(result);
   }
 
-  /** Réinitialise tout l'état (retour à l'accueil). */
   reset() {
     Object.values(this.K).forEach((k) => localStorage.removeItem(k));
     this.sessionId$.next(null);

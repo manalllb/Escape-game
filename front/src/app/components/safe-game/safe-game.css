@@ -1,6 +1,4 @@
-/* =============================
-   Coffre-fort du Laboratoire — Phase finale
-   ============================= */
+
 
 .safe-container {
   background: linear-gradient(135deg, #2f2147 0%, #4c1d95 50%, #581c87 100%);
@@ -186,7 +184,6 @@
   color: #fcd34d;
 }
 
-/* Responsive */
 @media (max-width: 640px) {
   .safe-container {
     padding: 24px 18px;

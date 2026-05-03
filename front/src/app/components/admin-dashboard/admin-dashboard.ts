@@ -22,10 +22,6 @@ function statusClass(session: AdminSessionItem | SessionStateResponse | null): s
   return 'pending';
 }
 
-/**
- * Tableau de bord administrateur.
- * Affiche la liste des sessions, permet de créer, désactiver et supprimer.
- */
 @Component({
   selector: 'app-admin-dashboard',
   imports: [CommonModule, FormsModule],
@@ -40,10 +36,8 @@ export class AdminDashboard implements OnInit, OnDestroy {
   loading = true;
   error = '';
 
-  // État de création séparé
   createLoading = false;
 
-  // Abonnement au polling
   private pollSub?: Subscription;
 
   constructor(
@@ -51,13 +45,12 @@ export class AdminDashboard implements OnInit, OnDestroy {
     private gameState: GameStateService,
     private authService: AuthService,
     private router: Router,
-    private cdr: ChangeDetectorRef  // ← Ajoute ça
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit() {
     this.adminEmail = this.gameState.getAdminEmail();
 
-    // Vérifie que le token est encore valide
     if (!this.authService.hasToken()) {
       this.router.navigate(['/admin-login']);
       return;
@@ -70,7 +63,6 @@ export class AdminDashboard implements OnInit, OnDestroy {
     this.pollSub?.unsubscribe();
   }
 
-  /** Charge la liste des sessions de l'admin. */
   loadSessions() {
     this.error = '';
     this.loading = true;
@@ -80,15 +72,12 @@ export class AdminDashboard implements OnInit, OnDestroy {
 
     this.sessionService.getAdminSessions().subscribe({
       next: (data) => {
-        console.log('Sessions chargées :', data);
         this.sessions = data;
         this.loading = false;
       },
       error: (err) => {
-        console.error('Erreur lors du chargement des sessions :', err);
         this.error = err.message;
         this.loading = false;
-        // Si token invalide, redirige vers login
         if (err.message?.includes('Token') || err.message?.includes('401')) {
           this.gameState.reset();
           this.router.navigate(['/admin-login']);
@@ -97,10 +86,8 @@ export class AdminDashboard implements OnInit, OnDestroy {
     });
   }
 
-  /** Sélectionne une session pour voir ses détails (avec polling). */
   selectSession(sessionId: number) {
     if (this.selectedSessionId === sessionId) {
-      // Désélectionne si on reclique sur la même
       this.selectedSessionId = null;
       this.selectedSession = null;
       this.pollSub?.unsubscribe();
@@ -113,7 +100,6 @@ export class AdminDashboard implements OnInit, OnDestroy {
 
     this.loadSessionDetail(sessionId);
 
-    // Polling toutes les 4 secondes
     this.pollSub = interval(4000)
       .pipe(switchMap(() => this.sessionService.getState(sessionId)))
       .subscribe({
@@ -126,7 +112,6 @@ export class AdminDashboard implements OnInit, OnDestroy {
       });
   }
 
-  /** Charge une session une fois. */
   loadSessionDetail(sessionId: number) {
     this.sessionService.getState(sessionId).subscribe({
       next: (data) => {
@@ -138,7 +123,6 @@ export class AdminDashboard implements OnInit, OnDestroy {
     });
   }
 
-  /** Crée une nouvelle session de jeu instantanément. */
   createSession() {
     if (this.createLoading) return;
     this.error = '';
@@ -156,7 +140,6 @@ export class AdminDashboard implements OnInit, OnDestroy {
     });
   }
 
-  /** Supprime physiquement une session avec confirmation. */
   deleteSession(sessionId: number, event: Event) {
     event.stopPropagation();
     if (!confirm('Voulez-vous vraiment supprimer cette session ?')) {
@@ -179,12 +162,10 @@ export class AdminDashboard implements OnInit, OnDestroy {
     });
   }
 
-  /** Copie le code PIN dans le presse-papiers. */
   copyPin(pin: string) {
     navigator.clipboard.writeText(pin).catch(() => {});
   }
 
-  // Helpers pour le template
   statusLabel(item: AdminSessionItem | SessionStateResponse | null): string {
     return statusLabel(item);
   }
@@ -193,17 +174,14 @@ export class AdminDashboard implements OnInit, OnDestroy {
     return statusClass(item);
   }
 
-  /** Trie les suivis par ordre croissant. */
   getOrderedSuivis() {
     return (this.selectedSession?.suivis ?? []).slice().sort((a, b) => a.ordre - b.ordre);
   }
 
-  /** Calcule le nombre de mini-jeux terminés. */
   getDoneCount(): number {
     return this.getOrderedSuivis().filter((s) => s.termine).length;
   }
 
-  /** Calcule le pourcentage de progression. */
   getProgress(): number {
     const suivis = this.getOrderedSuivis();
     if (!suivis.length) return 0;

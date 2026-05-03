@@ -30,7 +30,7 @@ class SessionController extends AbstractController
         $data = json_decode($request->getContent(), true) ?? [];
         $token = $request->headers->get('X-Api-Token');
 
-        // Support legacy : email + password dans le body si pas de token
+        // email + password dans le body si pas de token
         if ($token) {
             $admin = $adminRepo->findOneBy(['apiToken' => $token]);
         } else {

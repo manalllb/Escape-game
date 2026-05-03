@@ -89,32 +89,24 @@ export interface ValidateCodeResponse {
   scoreFinal: number;
 }
 
-/**
- * Service qui gère toutes les opérations liées aux sessions de jeu :
- * création, rejoindre, état, validation des mini-jeux et du code final.
- */
 @Injectable({
   providedIn: 'root'
 })
 export class SessionService {
   constructor(private api: ApiService) {}
 
-  /** Crée une nouvelle session (admin). Le token est injecté par ApiService. */
   createSession(): Observable<SessionCreateResponse> {
     return this.api.post<SessionCreateResponse>('/api/sessions', {});
   }
 
-  /** Liste toutes les sessions de l'admin connecté. */
   getAdminSessions(): Observable<AdminSessionItem[]> {
     return this.api.get<AdminSessionItem[]>('/api/admin/sessions');
   }
 
-  /** Désactive une session sans la supprimer. */
   disableSession(sessionId: number): Observable<{ message: string; sessionId: number; estActive: boolean }> {
     return this.api.patch<{ message: string; sessionId: number; estActive: boolean }>(`/api/sessions/${sessionId}/disable`);
   }
 
-  /** Rejoint une session existante (joueur). */
   joinSession(codePin: string, pseudo: string): Observable<SessionJoinResponse> {
     return this.api.post<SessionJoinResponse>('/api/sessions/join', {
       codePin,
@@ -122,12 +114,10 @@ export class SessionService {
     });
   }
 
-  /** Récupère l'état complet d'une session. */
   getState(sessionId: number): Observable<SessionStateResponse> {
     return this.api.get<SessionStateResponse>(`/api/sessions/${sessionId}/state`);
   }
 
-  /** Soumet le score d'un mini-jeu terminé. */
   completeMiniJeu(
     sessionId: number,
     miniJeuId: number,
@@ -142,17 +132,14 @@ export class SessionService {
     );
   }
 
-  /** Marque une session comme échouée (fermeture par le joueur). */
   failSession(sessionId: number): Observable<{ message: string; sessionId: number; estActive: boolean }> {
     return this.api.post<{ message: string; sessionId: number; estActive: boolean }>(`/api/sessions/${sessionId}/fail`, {});
   }
 
-  /** Supprime une session de jeu. */
   deleteSession(sessionId: number): Observable<{ message: string }> {
     return this.api.delete<{ message: string }>(`/api/sessions/${sessionId}`);
   }
 
-  /** Valide le code final saisi par le joueur. */
   validateCode(sessionId: number, code: string): Observable<ValidateCodeResponse> {
     return this.api.post<ValidateCodeResponse>(
       `/api/sessions/${sessionId}/validate-code`,

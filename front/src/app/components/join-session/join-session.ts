@@ -5,10 +5,6 @@ import { Router } from '@angular/router';
 import { SessionService } from '../../services/session.service';
 import { GameStateService } from '../../services/game-state.service';
 
-/**
- * Page de connexion joueur.
- * Permet de saisir le code PIN et son pseudo pour rejoindre une session.
- */
 @Component({
   selector: 'app-join-session',
   imports: [CommonModule, FormsModule],
@@ -27,12 +23,10 @@ export class JoinSession {
     private router: Router
   ) {}
 
-  /** Nettoie le PIN pour ne garder que les chiffres (max 6). */
   onPinChange(value: string) {
     this.pin = value.replace(/\D/g, '').slice(0, 6);
   }
 
-  /** Transforme l'erreur backend en message lisible pour le joueur. */
   private formatJoinError(err: Error & { status?: number }): string {
     switch (err.status) {
       case 404:
@@ -46,7 +40,6 @@ export class JoinSession {
     }
   }
 
-  /** Rejoint la session via l'API. */
   handleSubmit() {
     this.error = '';
     this.loading = true;

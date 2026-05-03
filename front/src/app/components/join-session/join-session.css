@@ -1,4 +1,4 @@
-/* ===== Page Rejoindre une session ===== */
+
 
 .join-wrap {
   display: flex;
@@ -135,8 +135,6 @@
   transform: none;
   box-shadow: none;
 }
-
-/* ===== Carte info "À propos" ===== */
 
 .join-info-card {
   width: min(460px, 100%);

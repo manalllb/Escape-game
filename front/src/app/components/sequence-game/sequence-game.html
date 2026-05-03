@@ -1,55 +1,41 @@
 <div *ngIf="error" class="error-box">{{ error }}</div>
 
 <div class="seq-game-container">
-  <!-- Header de progression -->
   <header class="seq-header" *ngIf="game || !error">
     <div class="seq-header-left">
       <span class="seq-header-icon">🧴</span>
-      <span class="seq-header-title">Progression des Soins</span>
+      <span class="seq-header-title">Routine de soin</span>
     </div>
     <div class="seq-header-right">
       <span class="seq-step-label">Étape {{ currentStep }}/{{ totalSteps }}</span>
     </div>
   </header>
 
-  <!-- Barre de progression -->
   <div class="seq-progress-bar" *ngIf="game || !error">
     <div class="seq-progress-track">
       <div class="seq-progress-fill" [style.width.%]="(currentStep / totalSteps) * 100"></div>
     </div>
   </div>
 
-  <!-- Zone de jeu -->
   <div class="seq-playfield" *ngIf="game || !error">
-    <!-- Colonne gauche : Visage -->
     <div class="seq-face-col">
-      <h3 class="seq-col-title">Visage à Traiter</h3>
+      <h3 class="seq-col-title">Zone d’application</h3>
       <div class="seq-face-wrap">
         <svg class="seq-face" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
-          <!-- Visage -->
           <circle cx="100" cy="100" r="85" fill="#ffe0bd" stroke="#d4a373" stroke-width="2"/>
-          <!-- Oreilles -->
           <ellipse cx="18" cy="100" rx="12" ry="18" fill="#ffe0bd" stroke="#d4a373" stroke-width="1.5"/>
           <ellipse cx="182" cy="100" rx="12" ry="18" fill="#ffe0bd" stroke="#d4a373" stroke-width="1.5"/>
-          <!-- Cheveux -->
           <path d="M 30 70 Q 50 15 100 15 Q 150 15 170 70" fill="none" stroke="#8b5e3c" stroke-width="14" stroke-linecap="round"/>
-          <!-- Yeux -->
           <circle cx="70" cy="90" r="7" fill="#3a2e2e"/>
           <circle cx="130" cy="90" r="7" fill="#3a2e2e"/>
-          <!-- Reflets yeux -->
           <circle cx="73" cy="87" r="2.5" fill="#fff"/>
           <circle cx="133" cy="87" r="2.5" fill="#fff"/>
-          <!-- Sourcils -->
           <path d="M 55 78 Q 70 72 85 78" fill="none" stroke="#8b5e3c" stroke-width="3" stroke-linecap="round"/>
           <path d="M 115 78 Q 130 72 145 78" fill="none" stroke="#8b5e3c" stroke-width="3" stroke-linecap="round"/>
-          <!-- Nez -->
           <path d="M 96 100 L 100 115 L 104 100" fill="none" stroke="#d4a373" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
-          <!-- Joues roses (plus visibles quand des étapes sont appliquées) -->
           <circle cx="55" cy="120" r="14" fill="#ff8fa3" opacity="0.35"/>
           <circle cx="145" cy="120" r="14" fill="#ff8fa3" opacity="0.35"/>
-          <!-- Bouche -->
           <path d="M 75 135 Q 100 150 125 135" fill="none" stroke="#d45d5d" stroke-width="3" stroke-linecap="round"/>
-          <!-- Produits appliqués : petites icônes flottantes -->
           <g *ngFor="let s of getAppliedOrdered(); let i = index">
             <text
               [attr.x]="45 + (i % 3) * 55"
@@ -60,19 +46,17 @@
             >{{ getStepConfig(s.ordreAttendu).icon }}</text>
           </g>
         </svg>
-        <p class="seq-face-hint">Cliquez les produits un par un sur le visage</p>
+        <p class="seq-face-hint">Sélectionne les soins dans l’ordre qui te paraît logique.</p>
       </div>
 
-      <!-- Vies / Erreurs -->
       <div class="seq-lives-row">
-        <span class="seq-lives-label">Erreurs restantes:</span>
+        <span class="seq-lives-label">Essais :</span>
         <span class="seq-life" *ngFor="let l of [1,2,3]" [class.lost]="l <= mistakes">❤</span>
       </div>
     </div>
 
-    <!-- Colonne droite : Produits -->
     <div class="seq-products-col">
-      <h3 class="seq-col-title">Produits de Soin</h3>
+      <h3 class="seq-col-title">Produits disponibles</h3>
       <div class="seq-products-list">
         <button
           *ngFor="let step of choices; let i = index"
@@ -83,53 +67,51 @@
           (click)="onSelectProduct(step)"
           [disabled]="!gameActive || isApplied(step)"
         >
-          <span class="seq-product-num">{{ step.ordreAttendu }}</span>
           <span class="seq-product-icon">{{ getStepConfig(step.ordreAttendu).icon }}</span>
-          <span class="seq-product-name">{{ getStepConfig(step.ordreAttendu).label }}</span>
+          <span class="seq-product-info">
+            <span class="seq-product-name">{{ step.libelle }}</span>
+            <small class="seq-product-zone">{{ step.zoneApp }}</small>
+          </span>
         </button>
       </div>
 
       <div class="seq-tip-box">
         <span class="seq-tip-icon">💡</span>
-        <span class="seq-tip-text">Astuce: Suivez l'ordre numérique pour un soin optimal !</span>
+        <span class="seq-tip-text">Repère les soins de préparation avant les produits plus ciblés.</span>
       </div>
     </div>
   </div>
 
-  <!-- Overlay de démarrage -->
   <div *ngIf="!gameActive && !gameOver && game" class="seq-overlay start-overlay">
     <div class="overlay-card">
-      <h3>Prêt à jouer ?</h3>
+      <h3>Avant de commencer</h3>
       <p>
-        Applique les 5 produits de soin sur le visage dans le bon ordre (1 → 5).<br>
-        Attention : 3 erreurs et c'est perdu !
+        Remets la routine dans le bon ordre.<br>
+        Tu as droit à trois erreurs.
       </p>
       <button class="primary-btn" (click)="startGame()">Commencer</button>
     </div>
   </div>
 
-  <!-- Overlay de victoire -->
   <div *ngIf="gameOver && won" class="seq-overlay success-overlay">
     <div class="overlay-card">
-      <h3>✨ Soin parfait !</h3>
-      <p>Tu as appliqué les <strong>{{ currentStep }}</strong> produits dans le bon ordre.</p>
+      <h3>Routine validée</h3>
+      <p>Les <strong>{{ currentStep }}</strong> étapes sont placées correctement.</p>
       <p>Le fragment de code est débloqué.</p>
     </div>
   </div>
 
-  <!-- Overlay de défaite -->
   <div *ngIf="gameOver && !won" class="seq-overlay defeat-overlay">
     <div class="overlay-card">
-      <h3>💔 Raté !</h3>
-      <p *ngIf="defeatReason === 'mistakes'">Trop d'erreurs. Routine incomplète.</p>
+      <h3>Routine interrompue</h3>
+      <p *ngIf="defeatReason === 'mistakes'">Il y a trop d’erreurs dans la routine.</p>
       <p *ngIf="defeatReason === 'timeout'">Le temps est écoulé !</p>
       <p>Produits appliqués : <strong>{{ currentStep }}</strong> / {{ totalSteps }}</p>
       <p>La session est fermée.</p>
     </div>
   </div>
 
-  <!-- Chargement initial -->
   <div *ngIf="!game && !error" class="seq-loading">
-    <p>Chargement du mini-jeu...</p>
+    <p>Chargement du mini-jeu…</p>
   </div>
 </div>

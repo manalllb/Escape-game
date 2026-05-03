@@ -1,8 +1,5 @@
-/* =============================
-   Game Flow — Styles d'orchestration
-   ============================= */
 
-/* Layout compact quand un mini-jeu est actif */
+
 .game-active-layout {
   display: flex;
   flex-direction: column;
@@ -11,7 +8,6 @@
   overflow: hidden;
 }
 
-/* Header compact in-game */
 .game-compact-header {
   display: flex;
   align-items: center;
@@ -36,7 +32,6 @@
   font-variant-numeric: tabular-nums;
 }
 
-/* Overlay de déblocage de fragment */
 .fragment-unlock-overlay {
   position: fixed;
   inset: 0;
@@ -125,7 +120,6 @@
   font-size: 1rem;
 }
 
-/* Animations */
 @keyframes fadeIn {
   from {
     opacity: 0;

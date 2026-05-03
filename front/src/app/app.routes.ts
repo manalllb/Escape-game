@@ -1,10 +1,6 @@
 import { Routes } from '@angular/router';
 import { authGuard } from './guards/auth.guard';
 
-/**
- * Définition des routes de l'application Angular.
- * Chaque chemin correspond à une page (composant) du jeu.
- */
 export const routes: Routes = [
   {
     path: '',
@@ -47,6 +43,5 @@ export const routes: Routes = [
     loadComponent: () =>
       import('./components/defeat-page/defeat-page').then((m) => m.DefeatPage)
   },
-  // Redirection vers l'accueil si l'URL ne correspond à aucune route connue
   { path: '**', redirectTo: '', pathMatch: 'full' }
 ];

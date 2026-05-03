@@ -6,23 +6,9 @@ use App\Entity\ContSeq;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
-/**
- * Repository pour l'entité ContSeq.
- *
- * Fournit des méthodes de recherche personnalisées pour les étapes de séquence.
- * Étend ServiceEntityRepository qui fournit les méthodes CRUD de base :
- * - find(), findAll(), findBy(), findOneBy()
- * - save(), remove()
- *
- * @extends ServiceEntityRepository<ContSeq>
- */
+
 class ContSeqRepository extends ServiceEntityRepository
 {
-    /**
-     * Constructeur du repository.
-     *
-     * @param ManagerRegistry $registry Le registre de gestionnaire Doctrine injecté par le conteneur
-     */
     public function __construct(ManagerRegistry $registry)
     {
         parent::__construct($registry, ContSeq::class);

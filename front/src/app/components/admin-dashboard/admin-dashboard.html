@@ -1,40 +1,36 @@
 <div class="dashboard-wrap">
 
-  <!-- Section Panneau d'Administration -->
   <div class="dashboard-section">
     <div class="section-header">
-      <h2>Panneau d'Administration</h2>
+      <h2>Panneau admin</h2>
       <span style="opacity: 0.72; font-size: 14px;">{{ adminEmail }}</span>
     </div>
     <div class="section-body">
       <div class="manage-row">
         <div>
-          <h3>Gestion des Sessions</h3>
-          <p>Créez une nouvelle session pour votre escape game</p>
+          <h3>Sessions de jeu</h3>
+          <p>Lance une session et partage le PIN aux joueurs.</p>
         </div>
         <button class="create-btn" (click)="createSession()" [disabled]="createLoading">
           <span class="btn-icon">+</span>
-          {{ createLoading ? 'Création…' : 'Créer Session' }}
+          {{ createLoading ? 'Création…' : 'Créer une session' }}
         </button>
       </div>
     </div>
   </div>
 
-  <!-- Section Sessions -->
   <div class="dashboard-section">
     <div class="section-header">
       <h2>Sessions ({{ sessions.length }})</h2>
     </div>
     <div class="section-body">
-      <div *ngIf="loading">Chargement des sessions...</div>
+      <div *ngIf="loading">Chargement des sessions…</div>
       <div *ngIf="!loading && error" class="error-box">{{ error }}</div>
 
-      <!-- Aucune session -->
       <div *ngIf="!loading && sessions.length === 0" class="empty-state">
-        Aucune session. Créez-en une pour commencer.
+        Aucune session pour le moment.
       </div>
 
-      <!-- Liste des sessions -->
       <div *ngIf="!loading && sessions.length > 0" class="layout-stack">
         <div
           *ngFor="let s of sessions"
@@ -45,7 +41,7 @@
         >
           <div class="session-info">
             <div class="session-pin-row">
-              <span class="pin-label">Code PIN:</span>
+              <span class="pin-label">PIN :</span>
               <span class="pin-value">{{ s.codePin }}</span>
             </div>
             <div class="session-meta">
@@ -54,7 +50,7 @@
             <div class="session-badges">
               <span class="badge-status" [ngClass]="statusClass(s)">{{ statusLabel(s) }}</span>
               <span *ngIf="s.joueur" class="badge-players">🎮 {{ s.joueur.pseudo }}</span>
-              <span *ngIf="!s.joueur" class="badge-players">⏳ En attente de joueur</span>
+              <span *ngIf="!s.joueur" class="badge-players">⏳ En attente</span>
             </div>
           </div>
 
@@ -79,10 +75,9 @@
     </div>
   </div>
 
-  <!-- Section Détails de la session sélectionnée -->
   <div *ngIf="selectedSession" class="dashboard-section">
     <div class="section-header">
-      <h2>Détails de la session {{ selectedSession.codePin }}</h2>
+      <h2>Session {{ selectedSession.codePin }}</h2>
     </div>
     <div class="section-body">
       <p class="progress-text">
@@ -109,7 +104,7 @@
               <p class="mini-meta">Type : {{ suivi.type }} · Durée max : {{ suivi.dureeMax ?? '—' }}</p>
             </div>
             <div [ngClass]="'status-chip ' + (suivi.termine ? 'done' : 'pending')">
-              {{ suivi.termine ? 'Terminé' : 'Non commencé' }}
+              {{ suivi.termine ? 'Terminé' : 'En attente' }}
             </div>
           </div>
 
@@ -123,11 +118,11 @@
               <strong>{{ suivi.temps }}s</strong>
             </div>
             <div class="stat-card">
-              <small>Cosmétiques triés</small>
+              <small>Cosmétiques</small>
               <strong>{{ suivi.nbCosmetiqueAtt ?? 0 }}</strong>
             </div>
             <div class="stat-card">
-              <small>Non-cosmétiques triés</small>
+              <small>Autres produits</small>
               <strong>{{ suivi.nbNonCosmetiqueAtt ?? 0 }}</strong>
             </div>
           </div>

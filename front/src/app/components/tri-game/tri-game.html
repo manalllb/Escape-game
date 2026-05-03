@@ -1,7 +1,7 @@
 <div *ngIf="error" class="error-box">{{ error }}</div>
 
 <div class="tri-game-container">
-  <!-- Header du mini-jeu -->
+
   <header class="tri-header">
     <div class="tri-title">
       <span class="tri-icon">
@@ -21,22 +21,21 @@
         </svg>
       </span>
       <div>
-        <h2>Jeu 1: Tri Express</h2>
-        <p>Attrapez les produits cosmétiques !</p>
+        <h2>Tri express</h2>
+        <p>Attrape les produits cosmétiques.</p>
       </div>
     </div>
     <div class="tri-stats">
       <div class="tri-time">
-        Temps restant: <span>{{ formatTime(remainingTime) }}</span>
+        Temps : <span>{{ formatTime(remainingTime) }}</span>
       </div>
-      <div class="tri-score">Score: {{ score }}</div>
+      <div class="tri-score">Score : {{ score }}</div>
     </div>
   </header>
 
-  <!-- Barre de statut (vies + progression) -->
   <div class="tri-status-bar" *ngIf="game || !error">
     <div class="tri-lives">
-      <span class="lives-label">Vies:</span>
+      <span class="lives-label">Essais :</span>
       <span class="life" *ngFor="let l of [1, 2, 3]" [class.lost]="l > lives">❤</span>
     </div>
     <div class="tri-progress-wrap">
@@ -48,17 +47,15 @@
     </div>
   </div>
 
-  <!-- Zone de jeu -->
   <div
     #playfield
     class="tri-playfield"
     (mousemove)="onMouseMove($event)"
     (touchmove)="onTouchMove($event)"
   >
-    <!-- Fond rayé -->
+
     <div class="tri-background"></div>
 
-    <!-- Objets en chute -->
     <div
       *ngFor="let f of fallingItems; trackBy: trackById"
       class="tri-item"
@@ -69,51 +66,46 @@
       <span class="item-label">{{ f.item.nomProduit }}</span>
     </div>
 
-    <!-- Panier -->
     <div class="tri-basket" [style.left.px]="basketX">
       <div class="basket-icon">🧺</div>
       <div class="basket-label">Panier</div>
     </div>
 
-    <!-- Overlay de démarrage -->
     <div *ngIf="!gameActive && !gameOver && game" class="tri-overlay start-overlay">
       <div class="overlay-card">
-        <h3>Prêt à jouer ?</h3>
+        <h3>À toi de jouer</h3>
         <p>
-          Déplace le panier pour attraper les produits cosmétiques ({{ target }} objectifs).<br />
-          Évite les médicaments et compléments, ils te font perdre une vie !
+          Déplace le panier pour récupérer les bons produits.<br />
+          Les médicaments et compléments ne comptent pas comme cosmétiques.
         </p>
         <button class="primary-btn" (click)="startGame()">Commencer</button>
       </div>
     </div>
 
-    <!-- Overlay de victoire -->
     <div *ngIf="gameOver && won" class="tri-overlay success-overlay">
       <div class="overlay-card">
-        <h3>Mini-jeu réussi !</h3>
+        <h3>Tri validé</h3>
         <p>
           Tu as attrapé <strong>{{ score }}</strong> produits cosmétiques.
         </p>
-        <p>Le premier fragment de code est débloqué.</p>
+        <p>Un fragment du code est débloqué.</p>
       </div>
     </div>
 
-    <!-- Overlay de défaite -->
     <div *ngIf="gameOver && !won" class="tri-overlay defeat-overlay">
       <div class="overlay-card">
-        <h3>Game Over !</h3>
+        <h3>Partie arrêtée</h3>
         <p *ngIf="defeatReason === 'lives'">Tu as attrapé trop de produits non-cosmétiques.</p>
         <p *ngIf="defeatReason === 'timeout'">Le temps est écoulé !</p>
         <p>
-          Score: <strong>{{ score }}</strong> / {{ target }}
+          Score : <strong>{{ score }}</strong> / {{ target }}
         </p>
         <p>La session est fermée.</p>
       </div>
     </div>
   </div>
 
-  <!-- Chargement initial -->
   <div *ngIf="!game && !error" class="tri-loading">
-    <p>Chargement du mini-jeu...</p>
+    <p>Chargement du mini-jeu…</p>
   </div>
 </div>

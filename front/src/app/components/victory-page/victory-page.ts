@@ -15,10 +15,6 @@ interface Achievement {
   color: string;
 }
 
-/**
- * Page de victoire affichée lorsque le code final est correct.
- * Design : design-intefaces/img969.jpg
- */
 @Component({
   selector: 'app-victory-page',
   imports: [CommonModule],
@@ -39,12 +35,10 @@ export class VictoryPage {
     return this.result.session;
   }
 
-  /** Temps total en secondes (somme des temps des mini-jeux). */
   get totalTime(): number {
     return (this.session?.suivis ?? []).reduce((sum, s: SuiviState) => sum + (s.temps || 0), 0);
   }
 
-  /** Badges des mini-jeux terminés. */
   get achievements(): Achievement[] {
     const suivis = this.session?.suivis ?? [];
     return suivis
@@ -60,14 +54,12 @@ export class VictoryPage {
       });
   }
 
-  /** Formate un temps en mm:ss. */
   formatTime(totalSeconds: number): string {
     const m = Math.floor(totalSeconds / 60).toString().padStart(2, '0');
     const s = (totalSeconds % 60).toString().padStart(2, '0');
     return `${m}:${s}`;
   }
 
-  /** Retourne à l'accueil et réinitialise l'état. */
   restart() {
     this.gameState.reset();
     this.router.navigate(['/']);

@@ -9,29 +9,14 @@ use Symfony\Component\Routing\Attribute\Route;
 
 /**
  * Contrôleur pour la gestion des mini-jeux.
- * Permet de lister les mini-jeux disponibles et de récupérer leur contenu.
- *
- * Toutes les routes sont préfixées par /api et nommées avec api_
  */
 #[Route('/api', name: 'api_')]
 final class MiniJeuController extends AbstractController
 {
     /**
      * Récupère la liste de tous les mini-jeux actifs.
-     *
-     * Route : GET /api/minijeux
-     *
      * Les mini-jeux sont triés par ordre croissant (ordre de passage dans la session).
      * Seuls les mini-jeux avec le statut actif=true sont retournés.
-     *
-     * @param MiniJeuRepository $repo Le repository pour les mini-jeux
-     * @return JsonResponse La réponse JSON contenant un tableau de mini-jeux :
-     *   Chaque mini-jeu contient :
-     *   - id : L'identifiant du mini-jeu
-     *   - nom : Le nom affiché
-     *   - type : Le type (quiz, tri, sequence)
-     *   - ordre : L'ordre de passage
-     *   - dureeMax : La durée maximale en secondes
      */
     #[Route('/minijeux', name: 'minijeux_list', methods: ['GET'])]
     public function listMiniJeux(MiniJeuRepository $repo): JsonResponse
@@ -52,24 +37,11 @@ final class MiniJeuController extends AbstractController
     /**
      * Récupère le contenu détaillé d'un mini-jeu spécifique.
      *
-     * Route : GET /api/minijeux/{id}/contenu
-     *
      * Le contenu retourné dépend du type du mini-jeu :
-     * - quiz : tableau de questions avec bonnes et mauvaises réponses
-     * - tri : tableau d'items avec leur statut cosmétique
-     * - sequence : tableau d'étapes avec libellé, ordre et zone d'application
+     * quiz : tableau de questions avec bonnes et mauvaises réponses
+     * tri : tableau d'items avec leur statut cosmétique
+     * sequence : tableau d'étapes avec libellé, ordre et zone d'application
      *
-     * @param int $id L'identifiant du mini-jeu
-     * @param MiniJeuRepository $repo Le repository pour les mini-jeux
-     * @return JsonResponse La réponse JSON contenant :
-     *   Pour un quiz :
-     *   - id, nom, type, questions (id, question, bonneReponse, mauvaisesReponses)
-     *   Pour un tri :
-     *   - id, nom, type, items (id, nomProduit, estCosmetique)
-     *   Pour une séquence :
-     *   - id, nom, type, etapes (id, libelle, ordreAttendu, zoneApp)
-     *   Statut HTTP 404 si le mini-jeu n'existe pas
-     *   Statut HTTP 400 si le type n'est pas géré
      */
     #[Route('/minijeux/{id}/contenu', name: 'minijeu_contenu', methods: ['GET'])]
     public function contenuMiniJeu(int $id, MiniJeuRepository $repo): JsonResponse
